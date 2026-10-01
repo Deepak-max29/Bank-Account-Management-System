@@ -54,3 +54,6 @@ node_modules/
 scratch/
 *.py
 !database/*.py
+
+# Cloudflared binary
+cloudflared.exe
