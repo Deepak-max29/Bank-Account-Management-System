@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bank Account Management System - Secure Portal Sign In</title>
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/components.css">
+    <link rel="stylesheet" href="css/pages.css">
+</head>
+<body class="login-body">
+    <div class="login-wrapper">
+        <!-- Left Panel: Authentication Form -->
+        <div class="login-form-panel">
+            <div class="login-brand-header">
+                <div class="login-brand-emblem">🏛</div>
+                <h2>BAMS Premier Banking</h2>
+                <p>Authorized Personnel Management Portal</p>
+            </div>
+
+            <!-- Server & Session Message Alerts -->
+            <div id="login-error" class="error-message" style="display: none;"></div>
+            <div id="login-success" class="success-message" style="display: none;"></div>
+
+            <!-- Login Form (Spring Security Form Login) -->
+            <form id="login-form" action="/login" method="POST">
+                <input type="hidden" name="_csrf" value="{{CSRF_TOKEN}}">
+                
+                <div class="login-form-group">
+                    <label for="username">Operator / Employee ID</label>
+                    <div class="login-input-wrap">
+                        <span class="input-icon">👤</span>
+                        <input type="text" id="username" name="username" required autocomplete="username" 
+                            placeholder="Enter username (e.g. admin)">
+                    </div>
+                </div>
+
+                <div class="login-form-group">
+                    <label for="password">Security Password</label>
+                    <div class="login-input-wrap">
+                        <span class="input-icon">🔒</span>
+                        <input type="password" id="password" name="password" required autocomplete="current-password" 
+                            placeholder="••••••••">
+                    </div>
+                </div>
+
+                <button type="submit" class="btn-login-submit">
+                    Sign In to Portal →
+                </button>
+            </form>
+
+            <div class="login-security-tag">
+                <span>🛡️</span>
+                <span>256-Bit SSL Encrypted • Local Oracle XE Database Protected</span>
+            </div>
+        </div>
+
+        <!-- Right Panel: Currency Corner & Money Matters Awareness -->
+        <div class="currency-corner-panel">
+            <div class="currency-corner-header">
+                <span class="corner-icon">🪙</span>
+                <div>
+                    <h3>Currency Corner & Money Matters</h3>
+                    <p>Essential Banking Awareness, Global Currency Principles & Security Guidelines</p>
+                </div>
+            </div>
+
+            <div class="currency-cards-grid">
+                <!-- Card 1: Indian Rupee -->
+                <div class="currency-card highlight">
+                    <div class="currency-card-top">
+                        <span class="badge-emblem">🇮🇳</span>
+                        <h4>Indian Rupee (INR)</h4>
+                    </div>
+                    <p><strong>&#8377;1 = 100 Paise</strong>. The Indian Rupee is the official legal tender issued by the Reserve Bank of India (RBI).</p>
+                </div>
+
+                <!-- Card 2: Currency Codes -->
+                <div class="currency-card">
+                    <div class="currency-card-top">
+                        <span class="badge-emblem">💱</span>
+                        <h4>ISO Currency Codes</h4>
+                    </div>
+                    <p>Standardized 3-letter currency identifiers: <code>INR</code> (₹ Rupee), <code>USD</code> ($ Dollar), <code>EUR</code> (€ Euro), and <code>GBP</code> (£ Pound).</p>
+                </div>
+
+                <!-- Card 3: Exchange Rates -->
+                <div class="currency-card">
+                    <div class="currency-card-top">
+                        <span class="badge-emblem">📈</span>
+                        <h4>Exchange Rate Dynamics</h4>
+                    </div>
+                    <p>Foreign exchange rates fluctuate based on inflation, interest rate differentials, trade balances, and central bank benchmarks.</p>
+                </div>
+
+                <!-- Card 4: Smart Banking -->
+                <div class="currency-card">
+                    <div class="currency-card-top">
+                        <span class="badge-emblem">🛡️</span>
+                        <h4>Smart Banking Checklist</h4>
+                    </div>
+                    <p>Always verify recipient account numbers, IFSC codes, and transaction limits before approving fund disbursements or wire transfers.</p>
+                </div>
+
+                <!-- Card 5: Critical Security Tip -->
+                <div class="currency-card security">
+                    <div class="currency-card-top">
+                        <span class="badge-emblem">🔒</span>
+                        <h4>Zero Trust Security Tip</h4>
+                    </div>
+                    <p>Bank personnel and systems will <strong>never</strong> ask for customer PINs, CVVs, passwords, or OTPs. Never share credentials.</p>
+                </div>
+
+                <!-- Card 6: Financial Awareness -->
+                <div class="currency-card">
+                    <div class="currency-card-top">
+                        <span class="badge-emblem">📊</span>
+                        <h4>Financial Awareness</h4>
+                    </div>
+                    <p>Regular ledger audits, daily balance reconciliations, and disciplined debt tracking maintain sound liquidity and institution health.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/auth.js"></script>
+</body>
+</html>

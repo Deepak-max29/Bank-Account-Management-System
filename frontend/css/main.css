@@ -1,0 +1,140 @@
+/* css/main.css - Premium Colourful Design System */
+:root {
+    /* Brand Navy & Indigo */
+    --primary: #0F172A;
+    --primary-dark: #0B0F19;
+    --primary-light: #1E293B;
+    --primary-surface: #F8FAFC;
+    
+    /* Vibrant Royal Blue & Indigo Gradients */
+    --accent: #2563EB;
+    --accent-hover: #1D4ED8;
+    --accent-light: #3B82F6;
+    --accent-subtle: #EFF6FF;
+    
+    /* Rich Purple / Violet Accents */
+    --purple: #7C3AED;
+    --purple-light: #8B5CF6;
+    --purple-subtle: #F5F3FF;
+    
+    /* Teal & Emerald Accents */
+    --success: #10B981;
+    --success-hover: #059669;
+    --success-subtle: #ECFDF5;
+    --teal: #0D9488;
+    --teal-light: #14B8A6;
+    --teal-subtle: #F0FDFA;
+    
+    /* Warm Gold & Amber Highlights */
+    --warning: #F59E0B;
+    --warning-dark: #D97706;
+    --warning-subtle: #FFFBEB;
+    
+    /* Danger & Rose */
+    --danger: #EF4444;
+    --danger-hover: #DC2626;
+    --danger-subtle: #FEF2F2;
+
+    /* Base Surfaces */
+    --bg: #F1F5F9;
+    --bg-alt: #E2E8F0;
+    --card-bg: #FFFFFF;
+    --card-border: rgba(226, 232, 240, 0.9);
+    
+    /* Text Hierarchy */
+    --text: #0F172A;
+    --text-muted: #64748B;
+    --text-light: #94A3B8;
+    --border: #E2E8F0;
+    
+    /* Modern Elevation & Glows */
+    --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
+    --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.07), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
+    --shadow-md: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -4px rgba(0, 0, 0, 0.04);
+    --shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
+    --shadow-glow-blue: 0 0 20px rgba(37, 99, 235, 0.25);
+    --shadow-glow-purple: 0 0 20px rgba(124, 58, 237, 0.25);
+    
+    --radius-sm: 6px;
+    --radius: 10px;
+    --radius-lg: 14px;
+    --radius-full: 9999px;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    background-color: var(--bg);
+    color: var(--text);
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+html {
+    scroll-behavior: smooth;
+}
+
+a {
+    color: var(--accent);
+    text-decoration: none;
+    transition: color 0.15s ease;
+}
+
+a:hover {
+    color: var(--accent-hover);
+    text-decoration: none;
+}
+
+/* Typography Utilities */
+.page-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--primary);
+    letter-spacing: -0.02em;
+}
+
+.text-center { text-align: center; }
+.text-right { text-align: right; }
+.text-success { color: var(--success) !important; }
+.text-danger { color: var(--danger) !important; }
+.text-warning { color: var(--warning-dark) !important; }
+.text-accent { color: var(--accent) !important; }
+.text-purple { color: var(--purple) !important; }
+.text-muted { color: var(--text-muted); }
+.text-light { color: var(--text-light); }
+.text-xs { font-size: 0.75rem; }
+.text-sm { font-size: 0.875rem; }
+.font-medium { font-weight: 500; }
+.font-semibold { font-weight: 600; }
+.font-bold { font-weight: 700; }
+.font-mono { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; }
+
+/* Spacing Utilities */
+.mt-1 { margin-top: 0.5rem; }
+.mt-2 { margin-top: 1rem; }
+.mt-3 { margin-top: 1.5rem; }
+.mb-1 { margin-bottom: 0.5rem; }
+.mb-2 { margin-bottom: 1rem; }
+.mb-3 { margin-bottom: 1.5rem; }
+.pl-4 { padding-left: 1rem; }
+
+/* Flex & Layout Utilities */
+.d-flex { display: flex; }
+.flex-column { display: flex; flex-direction: column; }
+.justify-between { justify-content: space-between; }
+.align-center { align-items: center; }
+.gap-1 { gap: 0.5rem; }
+.gap-2 { gap: 1rem; }
+.hidden { display: none !important; }
+.text-truncate {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 200px;
+}

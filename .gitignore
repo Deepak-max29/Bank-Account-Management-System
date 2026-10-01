@@ -1,0 +1,56 @@
+# ============================================================
+# Bank Account Management System - .gitignore
+# ============================================================
+
+# Build output
+backend/target/
+*.class
+*.jar
+*.war
+*.ear
+
+# IDE files
+.idea/
+*.iml
+*.iws
+*.ipr
+.vscode/
+.settings/
+.project
+.classpath
+*.swp
+*.swo
+*~
+
+# Maven
+.mvn/wrapper/maven-wrapper.jar
+
+# Logs
+logs/
+*.log
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Database credentials (never commit real passwords)
+backend/src/main/resources/application-local.properties
+backend/src/main/resources/application-prod.properties
+
+# Temporary files
+*.tmp
+*.bak
+*.orig
+
+# Node (not used, but just in case)
+node_modules/
+
+# Environment files
+.env
+.env.local
+
+# Scratch and test verification scripts
+scratch/
+*.py
+!database/*.py
