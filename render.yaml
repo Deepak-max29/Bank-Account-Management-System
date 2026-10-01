@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: bank-account-management-system
+    name: deepak-bams-portal
     env: docker
     dockerfilePath: Dockerfile
     plan: free
@@ -8,9 +8,5 @@ services:
     autoDeploy: true
     healthCheckPath: /actuator/health
     envVars:
-      - key: SPRING_DATASOURCE_URL
-        sync: false
-      - key: SPRING_DATASOURCE_USERNAME
-        sync: false
-      - key: SPRING_DATASOURCE_PASSWORD
-        sync: false
+      - key: SPRING_PROFILES_ACTIVE
+        value: cloud

@@ -17,7 +17,7 @@ FROM eclipse-temurin:17-jre-jammy
 WORKDIR /app
 
 # Non-root user for security
-RUN useradd -m -u 1001 appuser
+RUN useradd -m -u 1001 appuser && mkdir -p /app/data && chown -R appuser:appuser /app
 
 # Copy the built jar from builder stage
 COPY --from=builder /workspace/backend/target/bank-account-management-1.0.0.jar /app/app.jar
@@ -25,6 +25,9 @@ COPY --from=builder /workspace/backend/target/bank-account-management-1.0.0.jar 
 # Ownership
 RUN chown -R appuser:appuser /app
 USER appuser
+
+# Activate cloud profile by default on Render / Docker
+ENV SPRING_PROFILES_ACTIVE=cloud
 
 # Default port (Render overrides PORT at runtime)
 ENV PORT=8081
