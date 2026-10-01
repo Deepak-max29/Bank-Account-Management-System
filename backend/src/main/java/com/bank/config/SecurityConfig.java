@@ -56,7 +56,8 @@ public class SecurityConfig {
                 .requestMatchers("/static/**", "/css/**", "/js/**", "/assets/**", "/favicon.ico").permitAll()
                 // GET /login is served by AuthController (login page with CSRF token injected).
                 // GET /api/csrf exposes the CSRF token to the frontend (logout).
-                .requestMatchers("/login", "/error", "/api/csrf").permitAll()
+                // Actuator health check must be public for Render's health check pings.
+                .requestMatchers("/login", "/error", "/api/csrf", "/actuator/health").permitAll()
                 .requestMatchers("/api/audit/**", "/audit/**").hasAnyRole("ADMIN", "MANAGER")
                 .requestMatchers("/api/employees/salary/**").hasRole("ADMIN")
                 .requestMatchers("/api/reports/**").hasAnyRole("ADMIN", "MANAGER")
