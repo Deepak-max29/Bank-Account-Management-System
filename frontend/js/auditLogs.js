@@ -45,11 +45,20 @@ window.loadAuditLogs = async () => {
                     <option value="TRANSFER">TRANSFER</option>
                 </select>
             </div>
-            <div style="min-width: 150px;">
+            <div style="min-width: 140px;">
                 <input type="number" id="audit-account-filter" class="form-control" placeholder="Account #" onchange="onAuditFilterChange()">
+            </div>
+            <div style="display:flex;align-items:center;gap:4px;">
+                <label for="audit-start-date" class="text-xs text-muted" style="margin:0;">From:</label>
+                <input type="date" id="audit-start-date" class="form-control" style="width:auto;" onchange="onAuditFilterChange()">
+            </div>
+            <div style="display:flex;align-items:center;gap:4px;">
+                <label for="audit-end-date" class="text-xs text-muted" style="margin:0;">To:</label>
+                <input type="date" id="audit-end-date" class="form-control" style="width:auto;" onchange="onAuditFilterChange()">
             </div>
             <button class="btn btn-primary btn-sm" onclick="onAuditFilterChange()">Filter</button>
             <button class="btn btn-outline btn-sm" onclick="resetAuditFilters()">Reset</button>
+            <button class="btn btn-outline btn-sm" onclick="downloadFilteredAuditCsv()" title="Download matching audit records as CSV">⬇ Export CSV</button>
         </div>
         <div class="card">
             <div id="audit-table-container"></div>
@@ -70,10 +79,14 @@ window.resetAuditFilters = async () => {
     const searchInput = document.getElementById('audit-search');
     const actionSelect = document.getElementById('audit-action-filter');
     const accInput = document.getElementById('audit-account-filter');
+    const startInput = document.getElementById('audit-start-date');
+    const endInput = document.getElementById('audit-end-date');
 
     if (searchInput) searchInput.value = '';
     if (actionSelect) actionSelect.value = '';
     if (accInput) accInput.value = '';
+    if (startInput) startInput.value = '';
+    if (endInput) endInput.value = '';
 
     auditCurrentPage = 1;
     await fetchAuditLogs(1);
@@ -89,14 +102,24 @@ const fetchAuditLogs = async (page = 1) => {
 
     const actionFilter = document.getElementById('audit-action-filter') ? document.getElementById('audit-action-filter').value.trim() : '';
     const accFilter = document.getElementById('audit-account-filter') ? document.getElementById('audit-account-filter').value.trim() : '';
+    const startFilter = document.getElementById('audit-start-date') ? document.getElementById('audit-start-date').value.trim() : '';
+    const endFilter = document.getElementById('audit-end-date') ? document.getElementById('audit-end-date').value.trim() : '';
+
+    if (startFilter && endFilter && startFilter > endFilter) {
+        showToast('Start date cannot be after end date', 'error');
+        showErrorState(tableContainer, 'Start date cannot be after end date');
+        return;
+    }
 
     try {
         let endpoint = `/audit?page=${page}&size=${auditPageSize}`;
 
-        if (actionFilter || accFilter) {
+        if (actionFilter || accFilter || startFilter || endFilter) {
             endpoint = `/audit/filter?page=${page}&size=${auditPageSize}`;
             if (actionFilter) endpoint += `&action=${encodeURIComponent(actionFilter)}`;
             if (accFilter) endpoint += `&accountNo=${encodeURIComponent(accFilter)}`;
+            if (startFilter) endpoint += `&start=${encodeURIComponent(startFilter + 'T00:00:00')}`;
+            if (endFilter) endpoint += `&end=${encodeURIComponent(endFilter + 'T23:59:59')}`;
         }
 
         const res = await apiGet(endpoint);
@@ -309,5 +332,57 @@ window.viewAuditLogDetails = async (logId) => {
         showModal(`Audit Log #${logId} Details`, bodyHtml, footerHtml);
     } catch (e) {
         showModal('Error', `<p class="text-danger">${escapeHtml(e.message || 'Failed to load audit log details.')}</p>`, '<button class="btn btn-outline" onclick="closeModal()">Close</button>');
+    }
+};
+
+window.downloadFilteredAuditCsv = async () => {
+    const actionFilter = document.getElementById('audit-action-filter') ? document.getElementById('audit-action-filter').value.trim() : '';
+    const accFilter = document.getElementById('audit-account-filter') ? document.getElementById('audit-account-filter').value.trim() : '';
+    const startFilter = document.getElementById('audit-start-date') ? document.getElementById('audit-start-date').value.trim() : '';
+    const endFilter = document.getElementById('audit-end-date') ? document.getElementById('audit-end-date').value.trim() : '';
+
+    if (startFilter && endFilter && startFilter > endFilter) {
+        showToast('Start date cannot be after end date', 'error');
+        return;
+    }
+
+    try {
+        showToast('Preparing audit log CSV export...', 'info');
+        let endpoint = '/api/audit/export?';
+        const params = [];
+        if (actionFilter) params.push('action=' + encodeURIComponent(actionFilter));
+        if (accFilter) params.push('accountNo=' + encodeURIComponent(accFilter));
+        if (startFilter) params.push('start=' + encodeURIComponent(startFilter + 'T00:00:00'));
+        if (endFilter) params.push('end=' + encodeURIComponent(endFilter + 'T23:59:59'));
+        endpoint += params.join('&');
+
+        const response = await fetch(endpoint, {
+            method: 'GET',
+            headers: { 'Accept': 'text/csv' }
+        });
+
+        if (response.status === 401) {
+            window.location.href = '/login';
+            return;
+        }
+        if (response.status === 403) {
+            showToast('Access Denied: You do not have permission to export audit records', 'error');
+            return;
+        }
+        if (!response.ok) {
+            showToast('Failed to export audit logs', 'error');
+            return;
+        }
+
+        const blob = await response.blob();
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'audit_logs_' + new Date().toISOString().slice(0, 10) + '.csv';
+        a.click();
+        URL.revokeObjectURL(url);
+        showToast('Audit log CSV exported successfully', 'success');
+    } catch (e) {
+        showToast('Export failed: ' + (e.message || e), 'error');
     }
 };

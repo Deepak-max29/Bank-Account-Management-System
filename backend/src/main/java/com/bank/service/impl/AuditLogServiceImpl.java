@@ -57,4 +57,34 @@ public class AuditLogServiceImpl implements AuditLogService {
     public List<AuditLog> getRecentLogs(int limit) {
         return auditLogRepository.findRecent(limit);
     }
+
+    @Override
+    public byte[] exportFilteredAuditLogs(Long accountNo, Long empId, String action, LocalDateTime start, LocalDateTime end) {
+        List<AuditLog> logs = auditLogRepository.filterLogs(accountNo, empId, action, start, end);
+        StringBuilder sb = new StringBuilder();
+        sb.append("LogId,Timestamp,ActionType,Description,AccountNo,EmpId,EmpName,IpAddress\r\n");
+        for (AuditLog log : logs) {
+            sb.append(log.getLogId() != null ? log.getLogId() : "").append(",");
+            sb.append(escapeCsv(log.getLogTimestamp() != null ? log.getLogTimestamp().toString() : "")).append(",");
+            sb.append(escapeCsv(log.getActionType() != null ? log.getActionType() : "")).append(",");
+            sb.append(escapeCsv(log.getDescription() != null ? log.getDescription() : "")).append(",");
+            sb.append(log.getAccountNo() != null ? log.getAccountNo() : "").append(",");
+            sb.append(log.getEmpId() != null ? log.getEmpId() : "").append(",");
+            sb.append(escapeCsv(log.getEmpName() != null ? log.getEmpName() : "")).append(",");
+            sb.append(escapeCsv(log.getIpAddress() != null ? log.getIpAddress() : "")).append("\r\n");
+        }
+        return sb.toString().getBytes(java.nio.charset.StandardCharsets.UTF_8);
+    }
+
+    private String escapeCsv(String val) {
+        if (val == null || val.isEmpty()) return "";
+        // Prevent formula injection
+        if (val.startsWith("=") || val.startsWith("+") || val.startsWith("-") || val.startsWith("@") || val.startsWith("\t") || val.startsWith("\r")) {
+            val = "'" + val;
+        }
+        if (val.contains(",") || val.contains("\"") || val.contains("\n") || val.contains("\r")) {
+            return "\"" + val.replace("\"", "\"\"") + "\"";
+        }
+        return val;
+    }
 }

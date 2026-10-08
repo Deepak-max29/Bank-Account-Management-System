@@ -72,4 +72,10 @@ public class LoanPaymentRepository {
                 "SELECT P.*, L.LOAN_TYPE, C.FIRST_NAME, C.LAST_NAME FROM LOAN_PAYMENT P JOIN LOAN L ON P.LOAN_ID = L.LOAN_ID JOIN CUSTOMER C ON L.CUSTOMER_ID = C.CUSTOMER_ID WHERE P.LOAN_ID = ? ORDER BY P.PAYMENT_DATE DESC",
                 loanPaymentRowMapper, loanId);
     }
+
+    public List<LoanPayment> findByCustomerId(Long customerId) {
+        return jdbcTemplate.query(
+                "SELECT P.*, L.LOAN_TYPE, C.FIRST_NAME, C.LAST_NAME FROM LOAN_PAYMENT P JOIN LOAN L ON P.LOAN_ID = L.LOAN_ID JOIN CUSTOMER C ON L.CUSTOMER_ID = C.CUSTOMER_ID WHERE L.CUSTOMER_ID = ? ORDER BY P.PAYMENT_DATE DESC",
+                loanPaymentRowMapper, customerId);
+    }
 }

@@ -236,13 +236,29 @@ window.clearCustomerFilters = () => {
 };
 
 // Customer Create / Edit Modal
-window.openCustomerModal = (customer = null) => {
+window.openCustomerModal = async (customer = null) => {
     const isEdit = !!customer;
     const title = isEdit ? `Edit Customer (#${customer.customerId})` : 'New Customer Onboarding';
     
     const dobValue = customer && (customer.dob || customer.dateOfBirth) 
         ? (customer.dob || customer.dateOfBirth).split('T')[0] 
         : '';
+
+    // Fetch banks & branches for onboarding
+    let banks = [];
+    let branches = [];
+    try {
+        const bRes = await apiGet('/banks');
+        banks = Array.isArray(bRes) ? bRes : (bRes && bRes.data ? bRes.data : []);
+        const brRes = await apiGet('/branches');
+        branches = Array.isArray(brRes) ? brRes : (brRes && brRes.data ? brRes.data : []);
+    } catch(e) {
+        console.warn('Could not load banks/branches for customer onboarding modal', e);
+    }
+
+    window._onboardingBranches = branches;
+
+    const bankOptions = banks.map(b => `<option value="${b.bankId}">${escapeHtml(b.bankName)} (${escapeHtml(b.headOffice || 'HO')})</option>`).join('');
 
     const body = `
         <form id="customer-form" class="modal-form-grid" onsubmit="event.preventDefault(); saveCustomer();">
@@ -297,6 +313,36 @@ window.openCustomerModal = (customer = null) => {
                 </select>
             </div>
 
+            ${!isEdit ? `
+            <div class="form-group">
+                <label for="cust-modal-bank">Primary Bank Selection</label>
+                <select id="cust-modal-bank" class="form-control" onchange="onOnboardingBankChange(this.value)">
+                    <option value="">-- Select Bank --</option>
+                    ${bankOptions}
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="cust-modal-branch">Home Branch Selection</label>
+                <select id="cust-modal-branch" class="form-control">
+                    <option value="">-- Select Branch --</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="cust-modal-acctype">Initial Account Type</label>
+                <select id="cust-modal-acctype" class="form-control">
+                    <option value="SAVINGS">SAVINGS Account (Min ₹500)</option>
+                    <option value="CURRENT">CURRENT Account (Min ₹1000)</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="cust-modal-balance">Initial Deposit Balance (₹)</label>
+                <input type="number" id="cust-modal-balance" class="form-control" min="500" step="100" value="1000">
+            </div>
+            ` : ''}
+
             <div class="form-group full-width">
                 <label for="cust-modal-address">Residential Address</label>
                 <textarea id="cust-modal-address" class="form-control" rows="2" placeholder="Full postal address...">${isEdit ? escapeHtml(customer.address || '') : ''}</textarea>
@@ -307,11 +353,30 @@ window.openCustomerModal = (customer = null) => {
     const footer = `
         <button type="button" class="btn btn-outline" onclick="closeModal()">Cancel</button>
         <button type="button" class="btn btn-primary" onclick="saveCustomer()">
-            ${isEdit ? 'Update Customer' : 'Create Customer'}
+            ${isEdit ? 'Update Customer' : 'Create & Onboard Customer'}
         </button>
     `;
 
     showModal(title, body, footer);
+
+    if (!isEdit && banks.length > 0) {
+        const bankSel = document.getElementById('cust-modal-bank');
+        if (bankSel) {
+            bankSel.value = banks[0].bankId;
+            onOnboardingBankChange(banks[0].bankId);
+        }
+    }
+};
+
+window.onOnboardingBankChange = (bankId) => {
+    const branchSel = document.getElementById('cust-modal-branch');
+    if (!branchSel) return;
+    const branches = (window._onboardingBranches || []).filter(b => String(b.bankId) === String(bankId));
+    if (branches.length === 0) {
+        branchSel.innerHTML = '<option value="">-- No Branches Available --</option>';
+    } else {
+        branchSel.innerHTML = branches.map(b => `<option value="${b.branchId}">${escapeHtml(b.branchName)} (${escapeHtml(b.city || '')} - IFSC: ${escapeHtml(b.ifscCode || '')})</option>`).join('');
+    }
 };
 
 window.saveCustomer = async () => {
@@ -351,8 +416,31 @@ window.saveCustomer = async () => {
             await apiPut(`/customers/${id}`, payload);
             showToast(`Customer #${id} updated successfully`, 'success');
         } else {
-            await apiPost('/customers', payload);
+            const createdRes = await apiPost('/customers', payload);
+            const createdCustomer = createdRes && createdRes.data ? createdRes.data : createdRes;
+            const newCustId = createdCustomer ? createdCustomer.customerId : null;
+            
             showToast('New customer onboarded successfully', 'success');
+
+            // Open initial account if bank/branch selected
+            const branchEl = document.getElementById('cust-modal-branch');
+            const accTypeEl = document.getElementById('cust-modal-acctype');
+            const balanceEl = document.getElementById('cust-modal-balance');
+            if (newCustId && branchEl && branchEl.value) {
+                try {
+                    const accPayload = {
+                        customerId: newCustId,
+                        branchId: parseInt(branchEl.value),
+                        accountType: accTypeEl ? accTypeEl.value : 'SAVINGS',
+                        balance: balanceEl ? parseFloat(balanceEl.value) || 1000 : 1000,
+                        status: 'ACTIVE'
+                    };
+                    await apiPost('/accounts', accPayload);
+                    showToast(`Initial ${accPayload.accountType} account opened at selected branch!`, 'success');
+                } catch(accErr) {
+                    console.warn('Initial account creation error', accErr);
+                }
+            }
         }
         closeModal();
         fetchCustomers();

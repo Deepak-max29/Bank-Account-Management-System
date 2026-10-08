@@ -7,6 +7,8 @@ import java.util.List;
 
 public interface DashboardService {
     DashboardStats getDashboardStats();
+    DashboardStats getCustomerDashboardStats(Long customerId);
     List<Transaction> getRecentTransactions(int limit);
+    List<Transaction> getRecentTransactionsForCustomer(Long customerId, int limit);
     List<AuditLog> getRecentAuditLogs(int limit);
 }

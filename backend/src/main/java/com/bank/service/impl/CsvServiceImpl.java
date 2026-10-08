@@ -246,6 +246,10 @@ public class CsvServiceImpl implements CsvService {
 
     private String esc(String v) {
         if (v == null || v.isEmpty()) return "";
+        // Prevent CSV formula injection in spreadsheet applications
+        if (v.startsWith("=") || v.startsWith("+") || v.startsWith("-") || v.startsWith("@") || v.startsWith("\t") || v.startsWith("\r")) {
+            v = "'" + v;
+        }
         if (v.contains(",") || v.contains("\"") || v.contains("\n") || v.contains("\r")) {
             return "\"" + v.replace("\"", "\"\"") + "\"";
         }

@@ -6,6 +6,7 @@ import com.bank.dto.response.ApiResponse;
 import com.bank.dto.response.PagedResponse;
 import com.bank.dto.response.TransactionReceipt;
 import com.bank.model.Transaction;
+import com.bank.security.SecurityUtils;
 import com.bank.service.TransactionService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -14,6 +15,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
+import java.util.Collections;
 import java.util.List;
 
 @RestController
@@ -22,19 +24,34 @@ import java.util.List;
 public class TransactionController {
 
     private final TransactionService transactionService;
+    private final SecurityUtils securityUtils;
 
     @GetMapping("/recent")
     public ResponseEntity<ApiResponse<List<Transaction>>> getRecentTransactions(@RequestParam(defaultValue = "10") int limit) {
+        if (securityUtils.isCustomer()) {
+            Long customerId = securityUtils.getCurrentCustomerId();
+            if (customerId != null) {
+                return ResponseEntity.ok(ApiResponse.ok(transactionService.getRecentTransactionsForCustomer(customerId, limit)));
+            }
+            return ResponseEntity.ok(ApiResponse.ok(Collections.emptyList()));
+        }
         return ResponseEntity.ok(ApiResponse.ok(transactionService.getRecentTransactions(limit)));
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<Transaction>> getTransactionById(@PathVariable Long id) {
-        return ResponseEntity.ok(ApiResponse.ok(transactionService.getTransactionById(id)));
+        Transaction txn = transactionService.getTransactionById(id);
+        if (securityUtils.isCustomer()) {
+            securityUtils.validateAccountAccess(txn.getAccountNo());
+        }
+        return ResponseEntity.ok(ApiResponse.ok(txn));
     }
 
     @GetMapping("/account/{accountNo}")
     public ResponseEntity<ApiResponse<List<Transaction>>> getTransactionsByAccount(@PathVariable Long accountNo) {
+        if (securityUtils.isCustomer()) {
+            securityUtils.validateAccountAccess(accountNo);
+        }
         return ResponseEntity.ok(ApiResponse.ok(transactionService.getTransactionsByAccount(accountNo)));
     }
 
@@ -47,24 +64,36 @@ public class TransactionController {
             @RequestParam(required = false) LocalDate end,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size) {
+        if (securityUtils.isCustomer()) {
+            securityUtils.validateAccountAccess(accountNo);
+        }
         return ResponseEntity.ok(ApiResponse.ok(transactionService.getTransactionHistory(accountNo, type, channel, start, end, page, size)));
     }
 
     @PostMapping("/deposit")
-    @PreAuthorize("hasRole('ADMIN') or hasRole('STAFF')")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('STAFF') or hasRole('CUSTOMER')")
     public ResponseEntity<ApiResponse<TransactionReceipt>> deposit(@Valid @RequestBody TransactionRequest request) {
+        if (securityUtils.isCustomer()) {
+            securityUtils.validateAccountAccess(request.getAccountNo());
+        }
         return ResponseEntity.ok(ApiResponse.ok(transactionService.deposit(request), "Deposit successful"));
     }
 
     @PostMapping("/withdraw")
-    @PreAuthorize("hasRole('ADMIN') or hasRole('STAFF')")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('STAFF') or hasRole('CUSTOMER')")
     public ResponseEntity<ApiResponse<TransactionReceipt>> withdraw(@Valid @RequestBody TransactionRequest request) {
+        if (securityUtils.isCustomer()) {
+            securityUtils.validateAccountAccess(request.getAccountNo());
+        }
         return ResponseEntity.ok(ApiResponse.ok(transactionService.withdraw(request), "Withdrawal successful"));
     }
 
     @PostMapping("/transfer")
-    @PreAuthorize("hasRole('ADMIN') or hasRole('STAFF')")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('STAFF') or hasRole('CUSTOMER')")
     public ResponseEntity<ApiResponse<TransactionReceipt>> transfer(@Valid @RequestBody TransferRequest request) {
+        if (securityUtils.isCustomer()) {
+            securityUtils.validateAccountAccess(request.getSourceAccountNo());
+        }
         return ResponseEntity.ok(ApiResponse.ok(transactionService.transfer(request), "Transfer successful"));
     }
 }

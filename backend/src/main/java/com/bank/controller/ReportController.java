@@ -48,4 +48,17 @@ public class ReportController {
     public ResponseEntity<ApiResponse<ReportData>> getLoanRepaymentReport() {
         return ResponseEntity.ok(ApiResponse.ok(reportService.generateLoanRepaymentReport()));
     }
+
+    @GetMapping("/transaction-reports")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('MANAGER')")
+    public ResponseEntity<ApiResponse<ReportData>> getFilteredTransactionReport(
+            @RequestParam(required = false) Long customerId,
+            @RequestParam(required = false) Long accountNo,
+            @RequestParam(required = false) String txnType,
+            @RequestParam(required = false) LocalDate start,
+            @RequestParam(required = false) LocalDate end,
+            @RequestParam(required = false) Double minAmount,
+            @RequestParam(required = false) Double maxAmount) {
+        return ResponseEntity.ok(ApiResponse.ok(reportService.generateFilteredTransactionReport(customerId, accountNo, txnType, start, end, minAmount, maxAmount)));
+    }
 }

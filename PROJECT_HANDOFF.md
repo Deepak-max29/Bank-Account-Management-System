@@ -182,11 +182,80 @@ Bank_Account_Management_System/
   * Core Financial Transaction: Cash deposit of ₹250.00 to Account #100000001 verified, updated balance to ₹50,250.00 ✅
   * Maven Tests: `mvn test` passed with `BUILD SUCCESS` (0 failures, 0 errors) ✅
 
+### Phase 6: Feature Enhancement — Dashboard Navigation, Filtered Reports, Calendar & Audit Enhancements
+
+#### Feature 1: Dashboard Cards & Actions — Clickable Navigation
+* **Frontend** `dashboard.js`: All 7 stat/finance cards (Total Customers, Active Accounts, Branch Network, Total Transactions, Deposits Inflow, Withdrawals Outflow, Active Loans) made clickable with `onclick` navigation to their corresponding modules.
+* Added `window.navigateTo(route, filter)` helper that sets `window._dashboardFilter` and changes `window.location.hash`.
+* Deposits/Withdrawals cards pass filter hints (`'deposit'`/`'withdrawal'`) consumed by `transactions.js`.
+* Dashboard quick actions wired: Customer Onboarding → `#customers`, Open Account → `#accounts`, Process Transaction → `#transactions`, Banking Calendar → `#calendar`, Manage Banks → `#banks`, Analytics & Reports → `#reports`.
+* View Full Ledger button and Recent Transactions header both navigate to `#transactions`.
+* Refresh Data button calls `window.loadDashboard()` directly.
+* CSS: Added `stat-card-clickable` and `finance-card-clickable` classes in `pages.css` with hover transforms, focus outlines, and arrow indicators.
+* Accessibility: All clickable cards have `role="button"`, `tabindex="0"`, `onkeydown` for Enter/Space, `aria-label`, and `title` attributes.
+* `accounts.js`: Enhanced `loadAccounts()` to check `window._dashboardFilter === 'active'` and auto-select ACTIVE status filter.
+* `transactions.js`: Enhanced `loadTransactions()` to check `window._dashboardFilter` for `'deposit'`/`'withdrawal'` and pre-select the corresponding tab/search input.
+
+#### Feature 2: Advanced Transaction Reports with Filters & CSV Download
+* **Frontend** `reports.js`: Added "📈 Filtered Transactions" tab with 7 filter fields — Customer dropdown (populated from `/api/customers`), Account Number input, Transaction Type select (Deposit/Withdrawal/Transfer Debit/Transfer Credit), Start Date, End Date, Min Amount, Max Amount.
+* `_loadFilteredTransactions()`: Assembles query string and calls `GET /api/reports/transaction-reports`.
+* `_clearFilteredTransactions()`: Resets all filter inputs and reloads data.
+* Summary cards for `TRANSACTION_REPORTS` type: Matching Transactions, Total Deposits, Total Withdrawals, Total Volume.
+* Cell formatting: `TxnType` rendered as colored badges (green/red/purple), `Amount`/`BalanceAfter` formatted as currency.
+* CSV export: Formula-injection protection (values starting with `=`, `+`, `-`, `@`, `\t`, `\r` prefixed with `'`).
+* Client-side validation: Start date ≤ End date, Min amount ≤ Max amount.
+* **Backend** `ReportServiceImpl.generateFilteredTransactionReport()`: Dynamic SQL with optional WHERE predicates for `Customer_ID`, `Account_No`, `Txn_Type` (case-insensitive), date range (`TRUNC/TO_DATE`), and amount range. Returns `ReportData` with 10 columns.
+* **Backend** `ReportController`: Added `@GetMapping("/transaction-reports")` with `@PreAuthorize("hasRole('ADMIN') or hasRole('MANAGER')")`.
+
+#### Feature 3: Audit Log Enhancements — Date Filters & CSV Export
+* **Frontend** `auditLogs.js`: Added date range filters (From/To date inputs) in the action bar. Added "⬇ Export CSV" button.
+* `downloadFilteredAuditCsv()`: Calls `GET /api/audit/export` with action, accountNo, start, end params and triggers browser file download.
+* `fetchAuditLogs()`: Enhanced to include start/end date filters (appends `T00:00:00`/`T23:59:59`).
+* `resetAuditFilters()`: Clears date inputs along with search, action, and account filters.
+* **Backend** `AuditLogServiceImpl.exportFilteredAuditLogs()`: Queries `filterLogs()`, builds CSV with header row and `escapeCsv()` formula-injection guard. Returns UTF-8 byte array.
+* **Backend** `AuditLogController`: Added `@GetMapping("/export")` returning `ResponseEntity<byte[]>` with `Content-Disposition: attachment` and `text/csv` content type.
+* **Backend** `AuditLogRepository.filterLogs()`: Dynamic WHERE clauses for accountNo, empId, actionType, start, end (using `java.sql.Timestamp.valueOf()`).
+
+#### Feature 4: Banking Calendar Module
+* **Frontend** `calendar.js` (348 lines): Fully functional offline calendar module. Defines `window.loadCalendar` with interactive calendar grid, month navigation (Prev/Next/Today), date selection, and event detail panel.
+* Loads events from 5 existing backend endpoints in parallel: `/loans`, `/transactions/recent?limit=200`, `/accounts`, `/cards`, `/loan-payments?page=1&size=200`.
+* 5 event categories with color-coded dots and legend: Loan Due (amber `#F59E0B`), Loan Payment (green `#10B981`), Transaction (blue `#3B82F6`), Account Opened (purple `#8B5CF6`), Card Expiry (red `#EF4444`).
+* Event detail panel shows category badge, event title, and description for each selected date.
+* Refresh button reloads all events from backend.
+* Calendar route added in `app.js` (`'calendar': { title: 'Banking Calendar', loader: () => window.loadCalendar... }`).
+* Sidebar nav item added in `index.html` (`<a href="#calendar" ...>📅 Calendar</a>`).
+* Calendar CSS (grid, cells, dots, navigation, events panel, legend) added to `pages.css`.
+* Keyboard accessible: all date cells have `tabindex="0"` and Enter/Space key handlers.
+
+#### Build & Package
+* Maven `clean package -DskipTests`: **BUILD SUCCESS** — 98 Java source files compiled, 27 frontend resources synced.
+* Standalone JAR: `backend/target/bank-account-management-1.0.0.jar`.
+
 ## 7. Project Status Summary & Next Steps
-* **Overall Status**: **ALL TASKS, DATA VISIBILITY BUGS, CSV MISMATCHES & PREMIUM UI REDESIGN COMPLETED AND VERIFIED (100% SUCCESS) ✅**
+* **Overall Status**: **ALL PHASES (1–6) COMPLETED — Core Banking, UI, Reports, Calendar, Dashboard Navigation, Audit Enhancements ✅**
 * **Deployment Artifact**: `backend/target/bank-account-management-1.0.0.jar`
 * **Startup Command**: `java -jar backend/target/bank-account-management-1.0.0.jar`
 * **Access URL**: `http://localhost:8081` (Credentials: `admin`/`admin123`, `manager1`/`manager123`, `staff1`/`staff123`)
 
+## 8. Files Modified in Phase 6
 
+| File | Change Summary |
+|------|---------------|
+| `frontend/js/dashboard.js` | Clickable cards, `navigateTo()` helper, quick actions, keyboard accessibility |
+| `frontend/js/accounts.js` | `_dashboardFilter='active'` auto-filter support |
+| `frontend/js/transactions.js` | `_dashboardFilter='deposit'/'withdrawal'` auto-filter support |
+| `frontend/js/reports.js` | "Filtered Transactions" tab, filter UI, `_loadFilteredTransactions`, summary cards, cell formatting |
+| `frontend/js/auditLogs.js` | Date range filters, "Export CSV" button, `downloadFilteredAuditCsv()` |
+| `frontend/js/calendar.js` | **New file** — Full calendar module (348 lines) |
+| `frontend/js/app.js` | Added `'calendar'` route |
+| `frontend/index.html` | Added Calendar sidebar nav item and `calendar.js` script tag |
+| `frontend/css/pages.css` | Clickable-card CSS, Calendar module CSS |
+| `backend/.../service/ReportService.java` | Added `generateFilteredTransactionReport()` |
+| `backend/.../service/impl/ReportServiceImpl.java` | Implemented filtered transaction report with dynamic SQL |
+| `backend/.../controller/ReportController.java` | Added `/transaction-reports` endpoint |
+| `backend/.../service/AuditLogService.java` | Added `exportFilteredAuditLogs()` |
+| `backend/.../service/impl/AuditLogServiceImpl.java` | Implemented CSV export with formula-injection guard |
+| `backend/.../controller/AuditLogController.java` | Added `/export` endpoint |
+| `backend/.../repository/AuditLogRepository.java` | Added `filterLogs()` method |
+| `backend/.../service/impl/CsvServiceImpl.java` | Enhanced `esc()` with formula-injection protection |
 

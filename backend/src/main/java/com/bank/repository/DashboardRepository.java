@@ -56,4 +56,32 @@ public class DashboardRepository {
     public List<AuditLog> getRecentAuditLogs(int limit) {
         return auditLogRepository.findRecent(limit);
     }
+
+    public Long getActiveAccountsByCustomer(Long customerId) {
+        return jdbcTemplate.queryForObject("SELECT COUNT(*) FROM ACCOUNT WHERE CUSTOMER_ID = ? AND STATUS = 'ACTIVE'", Long.class, customerId);
+    }
+
+    public Long getTransactionCountByCustomer(Long customerId) {
+        return jdbcTemplate.queryForObject(
+                "SELECT COUNT(T.TXN_ID) FROM TRANSACTION T JOIN ACCOUNT A ON T.ACCOUNT_NO = A.ACCOUNT_NO WHERE A.CUSTOMER_ID = ?",
+                Long.class, customerId);
+    }
+
+    public Long getLoanCountByCustomer(Long customerId) {
+        return jdbcTemplate.queryForObject("SELECT COUNT(*) FROM LOAN WHERE CUSTOMER_ID = ? AND LOAN_STATUS = 'ACTIVE'", Long.class, customerId);
+    }
+
+    public BigDecimal getTotalBalanceByCustomer(Long customerId) {
+        return jdbcTemplate.queryForObject("SELECT NVL(SUM(BALANCE), 0) FROM ACCOUNT WHERE CUSTOMER_ID = ? AND STATUS = 'ACTIVE'", BigDecimal.class, customerId);
+    }
+
+    public BigDecimal getTotalWithdrawalsByCustomer(Long customerId) {
+        return jdbcTemplate.queryForObject(
+                "SELECT NVL(SUM(T.AMOUNT), 0) FROM TRANSACTION T JOIN ACCOUNT A ON T.ACCOUNT_NO = A.ACCOUNT_NO WHERE A.CUSTOMER_ID = ? AND T.TXN_TYPE = 'WITHDRAWAL'",
+                BigDecimal.class, customerId);
+    }
+
+    public List<Transaction> getRecentTransactionsByCustomer(Long customerId, int limit) {
+        return transactionRepository.findRecentByCustomerId(customerId, limit);
+    }
 }

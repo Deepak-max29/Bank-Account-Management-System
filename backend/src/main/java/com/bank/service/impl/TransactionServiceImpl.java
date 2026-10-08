@@ -223,4 +223,14 @@ public class TransactionServiceImpl implements TransactionService {
     public List<Transaction> getRecentTransactions(int limit) {
         return transactionRepository.findRecent(limit);
     }
+
+    @Override
+    public List<Transaction> getRecentTransactionsForCustomer(Long customerId, int limit) {
+        return transactionRepository.findRecentByCustomerId(customerId, limit);
+    }
+
+    @Override
+    public List<Transaction> getTransactionsForCustomer(Long customerId) {
+        return transactionRepository.findByCustomerId(customerId);
+    }
 }

@@ -76,6 +76,12 @@ public class CardRepository {
                 cardRowMapper, accountNo);
     }
 
+    public List<Card> findByCustomerId(Long customerId) {
+        return jdbcTemplate.query(
+                "SELECT CD.*, C.FIRST_NAME, C.LAST_NAME FROM CARD CD JOIN ACCOUNT A ON CD.ACCOUNT_NO = A.ACCOUNT_NO JOIN CUSTOMER C ON A.CUSTOMER_ID = C.CUSTOMER_ID WHERE A.CUSTOMER_ID = ? ORDER BY CD.CARD_ID DESC",
+                cardRowMapper, customerId);
+    }
+
     public void updateStatus(Long cardId, String status) {
         jdbcTemplate.update("UPDATE CARD SET CARD_STATUS = ? WHERE CARD_ID = ?", status, cardId);
     }

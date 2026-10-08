@@ -21,6 +21,7 @@
                 <div class="report-tabs" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;padding:0 4px;">
                     <button class="btn btn-outline btn-sm report-tab active" data-report="account-balances" onclick="window._selectReport('account-balances', this)">💰 Account Balances</button>
                     <button class="btn btn-outline btn-sm report-tab" data-report="transaction-summary" onclick="window._selectReport('transaction-summary', this)">↔ Transaction Summary</button>
+                    <button class="btn btn-outline btn-sm report-tab" data-report="transaction-reports" onclick="window._selectReport('transaction-reports', this)">📈 Filtered Transactions</button>
                     <button class="btn btn-outline btn-sm report-tab" data-report="branch-activity" onclick="window._selectReport('branch-activity', this)">📍 Branch Activity</button>
                     <button class="btn btn-outline btn-sm report-tab" data-report="loan-repayments" onclick="window._selectReport('loan-repayments', this)">💵 Loan Repayments</button>
                     <button class="btn btn-outline btn-sm report-tab" data-report="customer-accounts" onclick="window._selectReport('customer-accounts', this)">👤 Customer Accounts</button>
@@ -68,6 +69,53 @@
                     <button class="btn btn-outline btn-sm" onclick="document.getElementById('rpt-start').value='';document.getElementById('rpt-end').value='';window._loadTransactionSummary()">Clear</button>
                 </div>
             `;
+        } else if (reportName === 'transaction-reports') {
+            filtersEl.style.display = 'block';
+            filtersEl.innerHTML = `
+                <div style="display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap;">
+                    <div class="form-group" style="margin:0;">
+                        <label for="rpt-tx-customer">Customer</label>
+                        <select id="rpt-tx-customer" class="form-control" style="width:auto;min-width:180px;">
+                            <option value="">-- All Customers --</option>
+                        </select>
+                    </div>
+                    <div class="form-group" style="margin:0;">
+                        <label for="rpt-tx-account">Account #</label>
+                        <input type="number" id="rpt-tx-account" class="form-control" placeholder="e.g. 100000001" style="width:140px;">
+                    </div>
+                    <div class="form-group" style="margin:0;">
+                        <label for="rpt-tx-type">Txn Type</label>
+                        <select id="rpt-tx-type" class="form-control" style="width:auto;">
+                            <option value="">All Types</option>
+                            <option value="DEPOSIT">Deposit</option>
+                            <option value="WITHDRAWAL">Withdrawal</option>
+                            <option value="TRANSFER_DEBIT">Transfer Debit</option>
+                            <option value="TRANSFER_CREDIT">Transfer Credit</option>
+                        </select>
+                    </div>
+                    <div class="form-group" style="margin:0;">
+                        <label for="rpt-tx-start">Start Date</label>
+                        <input type="date" id="rpt-tx-start" class="form-control" style="width:auto;">
+                    </div>
+                    <div class="form-group" style="margin:0;">
+                        <label for="rpt-tx-end">End Date</label>
+                        <input type="date" id="rpt-tx-end" class="form-control" style="width:auto;">
+                    </div>
+                    <div class="form-group" style="margin:0;">
+                        <label for="rpt-tx-min">Min Amount (₹)</label>
+                        <input type="number" id="rpt-tx-min" class="form-control" placeholder="0" min="0" style="width:110px;">
+                    </div>
+                    <div class="form-group" style="margin:0;">
+                        <label for="rpt-tx-max">Max Amount (₹)</label>
+                        <input type="number" id="rpt-tx-max" class="form-control" placeholder="No limit" min="0" style="width:110px;">
+                    </div>
+                    <div style="display:flex;gap:6px;">
+                        <button class="btn btn-primary btn-sm" onclick="window._loadFilteredTransactions()">Apply Filters</button>
+                        <button class="btn btn-outline btn-sm" onclick="window._clearFilteredTransactions()">Clear</button>
+                    </div>
+                </div>
+            `;
+            _loadCustomerDropdown('rpt-tx-customer');
         } else if (reportName === 'customer-accounts') {
             filtersEl.style.display = 'block';
             filtersEl.innerHTML = `
@@ -81,7 +129,7 @@
                     <button class="btn btn-primary btn-sm" onclick="window._loadCustomerAccounts()">View Report</button>
                 </div>
             `;
-            _loadCustomerDropdown();
+            _loadCustomerDropdown('rpt-customer');
         } else {
             filtersEl.style.display = 'none';
             filtersEl.innerHTML = '';
@@ -91,19 +139,20 @@
         _fetchReport(reportName);
     };
 
-    async function _loadCustomerDropdown() {
+    async function _loadCustomerDropdown(elementId = 'rpt-customer') {
         try {
             const res = await apiGet('/customers');
             const customers = res.data || res;
-            const sel = document.getElementById('rpt-customer');
+            const sel = document.getElementById(elementId);
             if (!sel) return;
-            sel.innerHTML = '<option value="">-- Select Customer --</option>';
+            const defaultText = elementId === 'rpt-tx-customer' ? '-- All Customers --' : '-- Select Customer --';
+            sel.innerHTML = `<option value="">${defaultText}</option>`;
             (Array.isArray(customers) ? customers : []).forEach(c => {
                 const name = escapeHtml((c.firstName || '') + ' ' + (c.lastName || '')).trim();
                 sel.innerHTML += `<option value="${c.customerId}">${name} (ID: ${c.customerId})</option>`;
             });
         } catch (e) {
-            const sel = document.getElementById('rpt-customer');
+            const sel = document.getElementById(elementId);
             if (sel) sel.innerHTML = '<option value="">Failed to load customers</option>';
         }
     }
@@ -121,6 +170,8 @@
                     break;
                 case 'transaction-summary':
                     return window._loadTransactionSummary();
+                case 'transaction-reports':
+                    return window._loadFilteredTransactions();
                 case 'branch-activity':
                     endpoint = '/reports/branch-activity';
                     break;
@@ -184,6 +235,59 @@
         } catch (e) {
             showErrorState(contentEl, 'Failed to load customer account report: ' + (e.message || e));
         }
+    };
+
+    window._loadFilteredTransactions = async function () {
+        const contentEl = document.getElementById('report-content');
+        if (!contentEl) return;
+
+        const custId = document.getElementById('rpt-tx-customer')?.value || '';
+        const accNo = document.getElementById('rpt-tx-account')?.value || '';
+        const type = document.getElementById('rpt-tx-type')?.value || '';
+        const start = document.getElementById('rpt-tx-start')?.value || '';
+        const end = document.getElementById('rpt-tx-end')?.value || '';
+        const minAmt = document.getElementById('rpt-tx-min')?.value || '';
+        const maxAmt = document.getElementById('rpt-tx-max')?.value || '';
+
+        // Validation
+        if (start && end && start > end) {
+            showToast('Start date cannot be after end date', 'error');
+            return;
+        }
+        if (minAmt && maxAmt && Number(minAmt) > Number(maxAmt)) {
+            showToast('Minimum amount cannot exceed maximum amount', 'error');
+            return;
+        }
+
+        showLoading(contentEl);
+
+        try {
+            let params = [];
+            if (custId) params.push('customerId=' + encodeURIComponent(custId));
+            if (accNo) params.push('accountNo=' + encodeURIComponent(accNo));
+            if (type && type !== 'ALL') params.push('txnType=' + encodeURIComponent(type));
+            if (start) params.push('start=' + encodeURIComponent(start));
+            if (end) params.push('end=' + encodeURIComponent(end));
+            if (minAmt) params.push('minAmount=' + encodeURIComponent(minAmt));
+            if (maxAmt) params.push('maxAmount=' + encodeURIComponent(maxAmt));
+            const qs = params.length > 0 ? '?' + params.join('&') : '';
+
+            const res = await apiGet('/reports/transaction-reports' + qs);
+            const data = res.data || res;
+            currentReportData = data;
+            _renderReportTable(data, contentEl);
+        } catch (e) {
+            showErrorState(contentEl, 'Failed to load transaction report: ' + (e.message || e));
+        }
+    };
+
+    window._clearFilteredTransactions = function () {
+        const ids = ['rpt-tx-customer', 'rpt-tx-account', 'rpt-tx-type', 'rpt-tx-start', 'rpt-tx-end', 'rpt-tx-min', 'rpt-tx-max'];
+        ids.forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.value = '';
+        });
+        window._loadFilteredTransactions();
     };
 
     // ========== Report Rendering ==========
@@ -286,6 +390,19 @@
                 { label: 'Accounts', value: rows.length, icon: '🏦' },
                 { label: 'Total Balance', value: formatCurrency(total), icon: '💰' }
             ];
+        } else if (rt === 'TRANSACTION_REPORTS') {
+            const totalCount = rows.length;
+            const deposits = rows.filter(r => (r.TxnType || '').toUpperCase() === 'DEPOSIT')
+                                 .reduce((s, r) => s + (Number(r.Amount) || 0), 0);
+            const withdrawals = rows.filter(r => (r.TxnType || '').toUpperCase() === 'WITHDRAWAL')
+                                    .reduce((s, r) => s + (Number(r.Amount) || 0), 0);
+            const totalVolume = rows.reduce((s, r) => s + (Number(r.Amount) || 0), 0);
+            cards = [
+                { label: 'Matching Transactions', value: totalCount, icon: '↔' },
+                { label: 'Total Deposits', value: formatCurrency(deposits), icon: '📈' },
+                { label: 'Total Withdrawals', value: formatCurrency(withdrawals), icon: '📉' },
+                { label: 'Total Volume', value: formatCurrency(totalVolume), icon: '💵' }
+            ];
         }
 
         if (cards.length === 0) return '';
@@ -309,12 +426,19 @@
 
         const h = header.toLowerCase();
         // Currency columns
-        if (['balance', 'totalamount', 'txnvolume', 'principal', 'outstanding', 'totalpaid'].includes(h)) {
+        if (['balance', 'totalamount', 'txnvolume', 'principal', 'outstanding', 'totalpaid', 'amount', 'balanceafter'].includes(h)) {
             return formatCurrency(Number(value));
         }
         // Status columns
         if (['status'].includes(h)) {
             return getStatusBadge(String(value));
+        }
+        // Txn type badge
+        if (h === 'txntype') {
+            const t = String(value).toUpperCase();
+            if (t === 'DEPOSIT') return `<span class="badge badge-success">${escapeHtml(t)}</span>`;
+            if (t === 'WITHDRAWAL') return `<span class="badge badge-danger">${escapeHtml(t)}</span>`;
+            return `<span class="badge badge-purple">${escapeHtml(t)}</span>`;
         }
         // Numeric count columns
         if (['txncount', 'accounts', 'payments'].includes(h)) {
@@ -340,6 +464,10 @@
                 let v = row[h];
                 if (v === null || v === undefined) return '';
                 v = String(v);
+                // Prevent formula injection
+                if (v.startsWith('=') || v.startsWith('+') || v.startsWith('-') || v.startsWith('@') || v.startsWith('\t') || v.startsWith('\r')) {
+                    v = "'" + v;
+                }
                 if (v.includes(',') || v.includes('"') || v.includes('\n')) {
                     return '"' + v.replace(/"/g, '""') + '"';
                 }

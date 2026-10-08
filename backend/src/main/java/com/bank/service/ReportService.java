@@ -9,4 +9,5 @@ public interface ReportService {
     ReportData generateTransactionSummaryReport(LocalDate start, LocalDate end);
     ReportData generateBranchActivityReport();
     ReportData generateLoanRepaymentReport();
+    ReportData generateFilteredTransactionReport(Long customerId, Long accountNo, String txnType, LocalDate start, LocalDate end, Double minAmount, Double maxAmount);
 }

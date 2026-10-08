@@ -68,6 +68,13 @@ window.loadAccounts = async () => {
         </div>
     `;
 
+    if (window._dashboardFilter === 'active' || window._dashboardFilter === 'ACTIVE') {
+        accountStatusFilter = 'ACTIVE';
+        const filterSelect = document.getElementById('acc-status-filter');
+        if (filterSelect) filterSelect.value = 'ACTIVE';
+        delete window._dashboardFilter;
+    }
+
     fetchAccounts();
 };
 

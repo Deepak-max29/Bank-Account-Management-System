@@ -44,6 +44,11 @@ public class CardServiceImpl implements CardService {
     }
 
     @Override
+    public List<Card> getCardsByCustomer(Long customerId) {
+        return cardRepository.findByCustomerId(customerId);
+    }
+
+    @Override
     @Transactional
     public Card issueCard(CardRequest request) {
         String type = request.getCardType() != null ? request.getCardType().trim().toUpperCase() : "";

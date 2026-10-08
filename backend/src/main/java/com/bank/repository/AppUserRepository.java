@@ -24,6 +24,7 @@ public class AppUserRepository {
             .passwordHash(rs.getString("PASSWORD_HASH"))
             .role(rs.getString("ROLE"))
             .empId(rs.getObject("EMP_ID") != null ? rs.getLong("EMP_ID") : null)
+            .customerId(rs.getObject("CUSTOMER_ID") != null ? rs.getLong("CUSTOMER_ID") : null)
             .isActive(rs.getBoolean("IS_ACTIVE"))
             .createdAt(rs.getTimestamp("CREATED_AT") != null ? rs.getTimestamp("CREATED_AT").toLocalDateTime() : null)
             .lastLogin(rs.getTimestamp("LAST_LOGIN") != null ? rs.getTimestamp("LAST_LOGIN").toLocalDateTime() : null)
@@ -48,8 +49,8 @@ public class AppUserRepository {
     public Long save(AppUser appUser) {
         Long id = jdbcTemplate.queryForObject("SELECT SEQ_USER_ID.NEXTVAL FROM DUAL", Long.class);
         jdbcTemplate.update(
-                "INSERT INTO APP_USER (USER_ID, USERNAME, PASSWORD_HASH, ROLE, EMP_ID, IS_ACTIVE) VALUES (?, ?, ?, ?, ?, ?)",
-                id, appUser.getUsername(), appUser.getPasswordHash(), appUser.getRole(), appUser.getEmpId(), appUser.getIsActive());
+                "INSERT INTO APP_USER (USER_ID, USERNAME, PASSWORD_HASH, ROLE, EMP_ID, CUSTOMER_ID, IS_ACTIVE) VALUES (?, ?, ?, ?, ?, ?, ?)",
+                id, appUser.getUsername(), appUser.getPasswordHash(), appUser.getRole(), appUser.getEmpId(), appUser.getCustomerId(), appUser.getIsActive());
         return id;
     }
 

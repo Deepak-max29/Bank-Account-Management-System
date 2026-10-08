@@ -57,7 +57,23 @@ window.loadTransactions = () => {
         </div>
     `;
 
-    renderTrxForm('deposit');
+    let initialTab = 'deposit';
+    if (window._dashboardFilter === 'withdrawal') {
+        initialTab = 'withdraw';
+        txnSearchQuery = 'withdrawal';
+        delete window._dashboardFilter;
+    } else if (window._dashboardFilter === 'deposit') {
+        initialTab = 'deposit';
+        txnSearchQuery = 'deposit';
+        delete window._dashboardFilter;
+    } else {
+        txnSearchQuery = '';
+    }
+
+    renderTrxForm(initialTab);
+    switchTrxTab(initialTab);
+    const searchInput = document.getElementById('txn-search-input');
+    if (searchInput && txnSearchQuery) searchInput.value = txnSearchQuery;
     fetchTransactions();
 };
 

@@ -44,7 +44,17 @@ window.loadLoans = async () => {
     `;
 
     await loadLoanDropdownData();
+
+    if (window._dashboardFilter === 'active' || window._dashboardFilter === 'ACTIVE') {
+        const statusFilter = document.getElementById('loan-status-filter');
+        if (statusFilter) statusFilter.value = 'ACTIVE';
+        delete window._dashboardFilter;
+    }
+
     await fetchLoans();
+    if (document.getElementById('loan-status-filter')?.value) {
+        window.filterLoans();
+    }
 };
 
 const loadLoanDropdownData = async () => {

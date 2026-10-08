@@ -1,9 +1,6 @@
 // js/app.js
 
 document.addEventListener('DOMContentLoaded', () => {
-    // Check authentication basic logic (could be improved based on actual auth mechanism)
-    // If not logged in, spring security typically redirects to /login on its own, but for SPAs we handle it too.
-    
     initRouter();
     initSidebar();
     
@@ -25,7 +22,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Try to load user info
+    // Load user info and apply role-based permissions
     loadUserInfo();
 });
 
@@ -59,13 +56,64 @@ async function loadUserInfo() {
         if (resp.ok) {
             const body = await resp.json();
             if (body && body.success && body.data) {
-                const roles = (body.data.roles || []).join(', ');
-                userInfo.innerText = roles ? `${body.data.username} (${roles})` : body.data.username;
+                window.currentUser = body.data;
+                const roles = body.data.roles || [];
+                window.isCustomerUser = roles.includes('CUSTOMER');
+
+                const displayName = body.data.customerName || body.data.employeeName || body.data.username;
+                const rolesStr = roles.join(', ');
+                userInfo.innerText = rolesStr ? `${displayName} (${rolesStr})` : displayName;
+
+                if (window.isCustomerUser) {
+                    applyCustomerRoleUI();
+                }
             }
         }
     } catch(e) {
         console.error('Failed to load user info', e);
     }
+}
+
+function applyCustomerRoleUI() {
+    // Hide administrative and management modules from customer sidebar
+    const restrictedRoutes = ['customers', 'banks', 'branches', 'employees', 'audit-logs', 'reports', 'calendar'];
+    restrictedRoutes.forEach(route => {
+        const navEl = document.querySelector(`.sidebar-nav .nav-item[data-route="${route}"]`);
+        if (navEl) navEl.style.display = 'none';
+    });
+
+    // Hide Organization section title
+    document.querySelectorAll('.sidebar-nav .nav-section-title').forEach(el => {
+        const txt = el.innerText.trim().toUpperCase();
+        if (txt.includes('ORGANIZATION')) {
+            el.style.display = 'none';
+        } else if (txt.includes('OVERVIEW')) {
+            el.innerText = 'Customer Portal';
+        } else if (txt.includes('CORE BANKING')) {
+            el.innerText = 'My Banking Services';
+        } else if (txt.includes('CREDIT')) {
+            el.innerText = 'My Credit & Loans';
+        } else if (txt.includes('GOVERNANCE')) {
+            el.innerText = 'My Settings';
+        }
+    });
+
+    // Rename nav labels for customer self-service
+    const renameMap = {
+        'dashboard': '⊞ My Portal',
+        'accounts': '💳 My Accounts',
+        'transactions': '↔ My Transactions',
+        'beneficiaries': '✓ Transfer Beneficiaries',
+        'cards': '🏷️ My Debit/Credit Cards',
+        'loans': '📑 My Loans',
+        'loan-payments': '📄 Loan Payments',
+        'settings': '⚙ Account Settings'
+    };
+
+    Object.entries(renameMap).forEach(([route, newText]) => {
+        const el = document.querySelector(`.sidebar-nav .nav-item[data-route="${route}"]`);
+        if (el) el.innerHTML = `<span>${newText.split(' ')[0]}</span> ${newText.substring(newText.indexOf(' ') + 1)}`;
+    });
 }
 
 const routes = {
@@ -80,6 +128,7 @@ const routes = {
     'loans': { title: 'Loans', loader: () => window.loadLoans ? window.loadLoans() : showPlaceholder('loans') },
     'loan-payments': { title: 'Loan Payments', loader: () => window.loadLoanPayments ? window.loadLoanPayments() : showPlaceholder('loan-payments') },
     'cards': { title: 'Cards', loader: () => window.loadCards ? window.loadCards() : showPlaceholder('cards') },
+    'calendar': { title: 'Banking Calendar', loader: () => window.loadCalendar ? window.loadCalendar() : showPlaceholder('calendar') },
     'audit-logs': { title: 'Audit Logs', loader: () => window.loadAuditLogs ? window.loadAuditLogs() : showPlaceholder('audit-logs') },
     'reports': { title: 'Reports', loader: () => window.loadReports ? window.loadReports() : showPlaceholder('reports') },
     'settings': { title: 'Settings', loader: () => window.loadSettings ? window.loadSettings() : showPlaceholder('settings') }
@@ -88,6 +137,18 @@ const routes = {
 function handleRoute() {
     let route = window.location.hash.substring(1);
     if (!route || !routes[route]) route = 'dashboard';
+
+    // Route guard for customer role
+    if (window.isCustomerUser) {
+        const staffOnlyRoutes = ['customers', 'banks', 'branches', 'employees', 'audit-logs', 'reports', 'calendar'];
+        if (staffOnlyRoutes.includes(route)) {
+            if (typeof showToast === 'function') {
+                showToast('Access restricted: Bank staff module only', 'warning');
+            }
+            window.location.hash = '#dashboard';
+            return;
+        }
+    }
     
     // Update active nav
     document.querySelectorAll('.nav-item').forEach(el => {
@@ -97,7 +158,21 @@ function handleRoute() {
     
     // Update title
     const titleEl = document.getElementById('page-title');
-    if (titleEl) titleEl.innerText = routes[route].title;
+    if (titleEl) {
+        if (window.isCustomerUser && route === 'dashboard') {
+            titleEl.innerText = 'Customer Self-Service Portal';
+        } else if (window.isCustomerUser && route === 'accounts') {
+            titleEl.innerText = 'My Bank Accounts';
+        } else if (window.isCustomerUser && route === 'transactions') {
+            titleEl.innerText = 'My Financial Transactions';
+        } else if (window.isCustomerUser && route === 'loans') {
+            titleEl.innerText = 'My Loans';
+        } else if (window.isCustomerUser && route === 'cards') {
+            titleEl.innerText = 'My Debit & Credit Cards';
+        } else {
+            titleEl.innerText = routes[route].title;
+        }
+    }
     
     // Close sidebar on mobile
     const sidebar = document.getElementById('sidebar');

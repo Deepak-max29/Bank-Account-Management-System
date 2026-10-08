@@ -20,26 +20,31 @@ public class EmployeeController {
     private final EmployeeService employeeService;
 
     @GetMapping
+    @PreAuthorize("hasRole('ADMIN') or hasRole('MANAGER') or hasRole('STAFF')")
     public ResponseEntity<ApiResponse<List<Employee>>> getAllEmployees() {
         return ResponseEntity.ok(ApiResponse.ok(employeeService.getAllEmployees()));
     }
 
     @GetMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('MANAGER') or hasRole('STAFF')")
     public ResponseEntity<ApiResponse<Employee>> getEmployeeById(@PathVariable Long id) {
         return ResponseEntity.ok(ApiResponse.ok(employeeService.getEmployeeById(id)));
     }
 
     @GetMapping("/branch/{branchId}")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('MANAGER') or hasRole('STAFF')")
     public ResponseEntity<ApiResponse<List<Employee>>> getEmployeesByBranch(@PathVariable Long branchId) {
         return ResponseEntity.ok(ApiResponse.ok(employeeService.getEmployeesByBranch(branchId)));
     }
 
     @GetMapping("/designation/{designation}")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('MANAGER') or hasRole('STAFF')")
     public ResponseEntity<ApiResponse<List<Employee>>> getEmployeesByDesignation(@PathVariable String designation) {
         return ResponseEntity.ok(ApiResponse.ok(employeeService.getEmployeesByDesignation(designation)));
     }
 
     @GetMapping("/managers")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('MANAGER') or hasRole('STAFF')")
     public ResponseEntity<ApiResponse<List<Employee>>> getManagers() {
         return ResponseEntity.ok(ApiResponse.ok(employeeService.getManagers()));
     }

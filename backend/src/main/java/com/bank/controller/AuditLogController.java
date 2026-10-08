@@ -53,4 +53,19 @@ public class AuditLogController {
         // Adjust to 0-based page for service
         return ResponseEntity.ok(ApiResponse.ok(auditLogService.getFilteredLogs(accountNo, empId, action, start, end, page - 1, size)));
     }
+
+    @GetMapping("/export")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('MANAGER')")
+    public ResponseEntity<byte[]> exportFilteredLogs(
+            @RequestParam(required = false) Long accountNo,
+            @RequestParam(required = false) Long empId,
+            @RequestParam(required = false) String action,
+            @RequestParam(required = false) LocalDateTime start,
+            @RequestParam(required = false) LocalDateTime end) {
+        byte[] csv = auditLogService.exportFilteredAuditLogs(accountNo, empId, action, start, end);
+        return ResponseEntity.ok()
+                .header(org.springframework.http.HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=audit_logs.csv")
+                .contentType(org.springframework.http.MediaType.parseMediaType("text/csv"))
+                .body(csv);
+    }
 }

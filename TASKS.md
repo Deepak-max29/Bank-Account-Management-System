@@ -197,3 +197,54 @@
     - CSV Export & Import: Banks canonical export verified; Customer export clean (6 rows); Customer CSV import succeeded and persisted new customer to Oracle XE ✅
     - Core Financial Transaction: Cash deposit of ₹250.00 to Account #100000001 verified, updated balance to ₹50,250.00 ✅
     - Overall: **100% SUCCESS on all verification checks**.
+
+---
+
+## Phase 5: Feature Enhancement — Dashboard Navigation, Filtered Reports, Calendar & Audit Enhancements
+
+### Feature 1: Dashboard Cards & Actions — Clickable Navigation
+- [x] Made all 7 stat/finance cards clickable with `onclick` navigation to corresponding modules.
+- [x] Total Customers → `#customers`, Active Accounts → `#accounts`, Branch Network → `#branches`, Total Transactions → `#transactions`.
+- [x] Deposits Inflow → `#transactions` with `window._dashboardFilter='deposit'`, Withdrawals Outflow → `#transactions` with `window._dashboardFilter='withdrawal'`.
+- [x] Active Loans → `#loans`.
+- [x] Added `window.navigateTo(route, filter)` helper in `dashboard.js` that sets `window._dashboardFilter` and changes hash.
+- [x] Dashboard quick actions (Recent Transactions, View Full Ledger, Customer Onboarding, Open Account, Process Transaction, Banking Calendar, Manage Banks, Analytics & Reports) all wired to correct routes.
+- [x] Refresh Data button reloads dashboard via `window.loadDashboard()`.
+- [x] Added hover effects (`stat-card-clickable`, `finance-card-clickable`), pointer cursors, keyboard accessibility (`tabindex`, `onkeydown`), arrow indicators, and ARIA labels.
+- [x] `accounts.js` enhanced with `window._dashboardFilter='active'` support to auto-filter active accounts on load.
+- [x] `transactions.js` enhanced with `window._dashboardFilter='deposit'/'withdrawal'` support.
+
+### Feature 2: Advanced Transaction Reports with Filters & CSV Download
+- [x] Added "Filtered Transactions" report tab in `reports.js` with 7 filter fields (Customer dropdown, Account #, Txn Type, Start Date, End Date, Min Amount, Max Amount).
+- [x] Frontend: `_loadFilteredTransactions()` assembles query string and calls `/api/reports/transaction-reports`.
+- [x] Frontend: `_clearFilteredTransactions()` resets all filter inputs and reloads.
+- [x] Frontend: Summary cards (Matching Transactions, Total Deposits, Total Withdrawals, Total Volume) for `TRANSACTION_REPORTS` report type.
+- [x] Frontend: Cell formatter for `TxnType` as colored badges, currency formatting for `Amount` and `BalanceAfter`.
+- [x] Frontend: CSV export with formula-injection protection.
+- [x] Backend: `ReportService.generateFilteredTransactionReport()` with dynamic SQL predicates.
+- [x] Backend: `ReportController @GetMapping("/transaction-reports")` endpoint with role-based access.
+- [x] Date range and amount range validation on client side.
+
+### Feature 3: Audit Log Enhancements — Date Filters & CSV Export
+- [x] Added date range filters (From/To) in audit log action bar.
+- [x] Added "Export CSV" button in audit log UI.
+- [x] Frontend: `downloadFilteredAuditCsv()` calls `GET /api/audit/export` with filters and triggers file download.
+- [x] Frontend: `fetchAuditLogs()` enhanced with start/end date filter support.
+- [x] Backend: `AuditLogService.exportFilteredAuditLogs()` returns CSV byte array with formula-injection guard.
+- [x] Backend: `AuditLogController @GetMapping("/export")` returns CSV with Content-Disposition header.
+- [x] Backend: `AuditLogRepository.filterLogs()` with dynamic WHERE clauses.
+
+### Feature 4: Banking Calendar Module
+- [x] Created `frontend/js/calendar.js` (348 lines) — fully functional offline calendar module.
+- [x] Calendar loads events from existing backend endpoints: loans, transactions, accounts, cards, loan payments.
+- [x] 5 event categories with color-coded dots: Loan Due, Loan Payment, Transaction, Account Opened, Card Expiry.
+- [x] Interactive calendar grid with month navigation, Today button, date selection, and event detail panel.
+- [x] Added `calendar` route in `app.js` and sidebar nav item in `index.html`.
+- [x] Calendar CSS added to `pages.css`. Keyboard accessible.
+
+### Build & Verification
+- [x] Maven `test-compile`: BUILD SUCCESS (98 source files compiled).
+- [x] Maven `clean package -DskipTests`: BUILD SUCCESS — JAR at `backend/target/bank-account-management-1.0.0.jar`.
+- [x] Frontend sync: 27 resources copied from `frontend/` to `backend/src/main/resources/static/`.
+- [x] All sidebar navigation items verified to have corresponding routes in `app.js`.
+- [x] All dashboard cards and quick actions verified to navigate to correct modules.

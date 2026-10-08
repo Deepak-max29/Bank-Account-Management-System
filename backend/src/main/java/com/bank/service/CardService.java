@@ -8,6 +8,7 @@ public interface CardService {
     List<Card> getAllCards();
     Card getCardById(Long id);
     List<Card> getCardsByAccount(Long accountNo);
+    List<Card> getCardsByCustomer(Long customerId);
     Card issueCard(CardRequest request);
     void activateCard(Long id);
     void blockCard(Long id);

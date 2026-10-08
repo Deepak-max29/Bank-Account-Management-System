@@ -102,6 +102,25 @@ public class TransactionRepository {
                 transactionRowMapper, limit);
     }
 
+    public List<Transaction> findRecentByCustomerId(Long customerId, int limit) {
+        return jdbcTemplate.query(
+                "SELECT * FROM (SELECT T.*, C.FIRST_NAME, C.LAST_NAME FROM TRANSACTION T JOIN ACCOUNT A ON T.ACCOUNT_NO = A.ACCOUNT_NO JOIN CUSTOMER C ON A.CUSTOMER_ID = C.CUSTOMER_ID WHERE A.CUSTOMER_ID = ? ORDER BY T.TXN_DATE DESC) WHERE ROWNUM <= ?",
+                transactionRowMapper, customerId, limit);
+    }
+
+    public List<Transaction> findByCustomerId(Long customerId) {
+        return jdbcTemplate.query(
+                "SELECT T.*, C.FIRST_NAME, C.LAST_NAME FROM TRANSACTION T JOIN ACCOUNT A ON T.ACCOUNT_NO = A.ACCOUNT_NO JOIN CUSTOMER C ON A.CUSTOMER_ID = C.CUSTOMER_ID WHERE A.CUSTOMER_ID = ? ORDER BY T.TXN_DATE DESC",
+                transactionRowMapper, customerId);
+    }
+
+    public int countByCustomerId(Long customerId) {
+        Integer count = jdbcTemplate.queryForObject(
+                "SELECT COUNT(T.TXN_ID) FROM TRANSACTION T JOIN ACCOUNT A ON T.ACCOUNT_NO = A.ACCOUNT_NO WHERE A.CUSTOMER_ID = ?",
+                Integer.class, customerId);
+        return count != null ? count : 0;
+    }
+
     public List<Transaction> findByRefTxnId(Long refTxnId) {
         return jdbcTemplate.query(
                 "SELECT T.*, C.FIRST_NAME, C.LAST_NAME FROM TRANSACTION T JOIN ACCOUNT A ON T.ACCOUNT_NO = A.ACCOUNT_NO JOIN CUSTOMER C ON A.CUSTOMER_ID = C.CUSTOMER_ID WHERE T.REF_TXN_ID = ?",

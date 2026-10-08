@@ -101,6 +101,61 @@ public class ReportServiceImpl implements ReportService {
         return build("LOAN_REPAYMENT", "Loan Repayment Report", List.of("LoanId", "Customer", "LoanType", "Status", "Principal", "Outstanding", "Payments", "TotalPaid"), rows);
     }
 
+    @Override
+    public ReportData generateFilteredTransactionReport(Long customerId, Long accountNo, String txnType, LocalDate start, LocalDate end, Double minAmount, Double maxAmount) {
+        StringBuilder sql = new StringBuilder("SELECT t.Txn_ID AS \"TxnId\", "
+                + "t.Account_No AS \"AccountNo\", "
+                + "c.Customer_ID AS \"CustomerId\", "
+                + "c.First_Name || ' ' || c.Last_Name AS \"CustomerName\", "
+                + "t.Txn_Type AS \"TxnType\", "
+                + "t.Amount AS \"Amount\", "
+                + "t.Balance_After AS \"BalanceAfter\", "
+                + "t.Channel AS \"Channel\", "
+                + "TO_CHAR(t.Txn_Date, 'YYYY-MM-DD HH24:MI:SS') AS \"TxnDate\", "
+                + "NVL(t.Remarks, '-') AS \"Remarks\" "
+                + "FROM TRANSACTION t "
+                + "JOIN ACCOUNT a ON t.Account_No = a.Account_No "
+                + "JOIN CUSTOMER c ON a.Customer_ID = c.Customer_ID "
+                + "WHERE 1=1");
+
+        List<Object> params = new java.util.ArrayList<>();
+
+        if (customerId != null) {
+            sql.append(" AND c.Customer_ID = ?");
+            params.add(customerId);
+        }
+        if (accountNo != null) {
+            sql.append(" AND t.Account_No = ?");
+            params.add(accountNo);
+        }
+        if (txnType != null && !txnType.trim().isEmpty() && !txnType.equalsIgnoreCase("ALL")) {
+            sql.append(" AND UPPER(t.Txn_Type) = UPPER(?)");
+            params.add(txnType.trim());
+        }
+        if (start != null) {
+            sql.append(" AND TRUNC(t.Txn_Date) >= TO_DATE(?,'YYYY-MM-DD')");
+            params.add(start.toString());
+        }
+        if (end != null) {
+            sql.append(" AND TRUNC(t.Txn_Date) <= TO_DATE(?,'YYYY-MM-DD')");
+            params.add(end.toString());
+        }
+        if (minAmount != null) {
+            sql.append(" AND t.Amount >= ?");
+            params.add(minAmount);
+        }
+        if (maxAmount != null) {
+            sql.append(" AND t.Amount <= ?");
+            params.add(maxAmount);
+        }
+
+        sql.append(" ORDER BY t.Txn_Date DESC");
+
+        List<Map<String, Object>> rows = jdbcTemplate.queryForList(sql.toString(), params.toArray());
+        List<String> headers = List.of("TxnId", "AccountNo", "CustomerId", "CustomerName", "TxnType", "Amount", "BalanceAfter", "Channel", "TxnDate", "Remarks");
+        return build("TRANSACTION_REPORTS", "Filtered Transaction Report", headers, rows);
+    }
+
     private ReportData build(String type, String title, List<String> headers, List<Map<String, Object>> rows) {
         ReportData data = new ReportData(headers, rows);
         data.setReportType(type);

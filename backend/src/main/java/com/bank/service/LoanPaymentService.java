@@ -8,5 +8,6 @@ public interface LoanPaymentService {
     List<LoanPayment> getAllPayments();
     LoanPayment getPaymentById(Long id);
     List<LoanPayment> getPaymentsByLoan(Long loanId);
+    List<LoanPayment> getPaymentsByCustomer(Long customerId);
     LoanPayment makePayment(LoanPaymentRequest request);
 }

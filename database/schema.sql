@@ -79,10 +79,12 @@ CREATE TABLE APP_USER (
     Password_Hash  VARCHAR2(255) NOT NULL,
     Role           VARCHAR2(20)  NOT NULL,
     Emp_ID         NUMBER,
+    Customer_ID    NUMBER,
     Is_Active      NUMBER(1)     DEFAULT 1 NOT NULL,
     Created_At     DATE          DEFAULT SYSDATE NOT NULL,
     Last_Login     DATE,
-    CONSTRAINT chk_user_role CHECK (Role IN ('ADMIN','STAFF','MANAGER'))
+    CONSTRAINT fk_user_customer FOREIGN KEY (Customer_ID) REFERENCES CUSTOMER(Customer_ID),
+    CONSTRAINT chk_user_role CHECK (Role IN ('ADMIN','STAFF','MANAGER','CUSTOMER'))
 )]'); END;
 /
 

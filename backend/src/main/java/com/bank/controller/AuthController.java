@@ -5,6 +5,7 @@ import com.bank.dto.response.ApiResponse;
 import com.bank.exception.ResourceNotFoundException;
 import com.bank.model.AppUser;
 import com.bank.repository.AppUserRepository;
+import com.bank.repository.CustomerRepository;
 import com.bank.repository.EmployeeRepository;
 import com.bank.service.AuditLogService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -40,6 +41,7 @@ public class AuthController {
 
     private final AppUserRepository appUserRepository;
     private final EmployeeRepository employeeRepository;
+    private final CustomerRepository customerRepository;
     private final PasswordEncoder passwordEncoder;
     private final AuditLogService auditLogService;
 
@@ -91,6 +93,14 @@ public class AuthController {
                     data.put("designation", emp.getDesignation());
                     data.put("email", emp.getEmail());
                     data.put("phone", emp.getPhone());
+                });
+            }
+            data.put("customerId", user.getCustomerId());
+            if (user.getCustomerId() != null) {
+                customerRepository.findById(user.getCustomerId()).ifPresent(cust -> {
+                    data.put("customerName", cust.getFirstName() + (cust.getLastName() != null ? " " + cust.getLastName() : ""));
+                    data.put("customerEmail", cust.getEmail());
+                    data.put("customerPhone", cust.getPhone());
                 });
             }
         });

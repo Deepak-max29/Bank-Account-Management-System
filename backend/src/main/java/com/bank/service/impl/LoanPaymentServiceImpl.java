@@ -41,6 +41,11 @@ public class LoanPaymentServiceImpl implements LoanPaymentService {
     }
 
     @Override
+    public List<LoanPayment> getPaymentsByCustomer(Long customerId) {
+        return loanPaymentRepository.findByCustomerId(customerId);
+    }
+
+    @Override
     @Transactional
     public LoanPayment makePayment(LoanPaymentRequest request) {
         Loan loan = loanRepository.findById(request.getLoanId()).orElseThrow(() -> new ResourceNotFoundException("Loan not found"));

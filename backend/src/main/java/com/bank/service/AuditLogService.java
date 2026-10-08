@@ -11,4 +11,5 @@ public interface AuditLogService {
     AuditLog getAuditLogById(Long id);
     PagedResponse<AuditLog> getFilteredLogs(Long accountNo, Long empId, String action, LocalDateTime start, LocalDateTime end, int page, int size);
     List<AuditLog> getRecentLogs(int limit);
+    byte[] exportFilteredAuditLogs(Long accountNo, Long empId, String action, LocalDateTime start, LocalDateTime end);
 }

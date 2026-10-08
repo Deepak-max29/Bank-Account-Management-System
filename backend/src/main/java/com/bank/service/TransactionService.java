@@ -16,4 +16,6 @@ public interface TransactionService {
     List<Transaction> getTransactionsByAccount(Long accountNo);
     PagedResponse<Transaction> getTransactionHistory(Long accountNo, String type, String channel, LocalDate start, LocalDate end, int page, int size);
     List<Transaction> getRecentTransactions(int limit);
+    List<Transaction> getRecentTransactionsForCustomer(Long customerId, int limit);
+    List<Transaction> getTransactionsForCustomer(Long customerId);
 }

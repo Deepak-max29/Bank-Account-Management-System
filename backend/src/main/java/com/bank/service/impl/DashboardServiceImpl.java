@@ -30,8 +30,26 @@ public class DashboardServiceImpl implements DashboardService {
     }
 
     @Override
+    public DashboardStats getCustomerDashboardStats(Long customerId) {
+        return DashboardStats.builder()
+                .totalCustomers(1L)
+                .activeAccounts(dashboardRepository.getActiveAccountsByCustomer(customerId))
+                .totalBranches(1L)
+                .transactionCount(dashboardRepository.getTransactionCountByCustomer(customerId))
+                .loanCount(dashboardRepository.getLoanCountByCustomer(customerId))
+                .totalDeposits(dashboardRepository.getTotalBalanceByCustomer(customerId))
+                .totalWithdrawals(dashboardRepository.getTotalWithdrawalsByCustomer(customerId))
+                .build();
+    }
+
+    @Override
     public List<Transaction> getRecentTransactions(int limit) {
         return dashboardRepository.getRecentTransactions(limit);
+    }
+
+    @Override
+    public List<Transaction> getRecentTransactionsForCustomer(Long customerId, int limit) {
+        return dashboardRepository.getRecentTransactionsByCustomer(customerId, limit);
     }
 
     @Override

@@ -17,6 +17,7 @@ public class AppUser {
     private String passwordHash;
     private String role;
     private Long empId;
+    private Long customerId;
     private Boolean isActive;
     private LocalDateTime createdAt;
     private LocalDateTime lastLogin;
