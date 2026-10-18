@@ -258,4 +258,10 @@ Bank_Account_Management_System/
 | `backend/.../controller/AuditLogController.java` | Added `/export` endpoint |
 | `backend/.../repository/AuditLogRepository.java` | Added `filterLogs()` method |
 | `backend/.../service/impl/CsvServiceImpl.java` | Enhanced `esc()` with formula-injection protection |
+| `backend/.../resources/schema-cloud.sql` | Fixed Render cloud H2 schema: added `Customer_ID` to `APP_USER` and seeded all customer logins |
+
+## 9. Cloud & Deployment (Render)
+* **Architecture**: Render runs the multi-stage `Dockerfile` with `SPRING_PROFILES_ACTIVE=cloud` which initializes H2 in Oracle mode via `backend/src/main/resources/schema-cloud.sql`.
+* **Fix Applied**: Updated `schema-cloud.sql` to include `Customer_ID BIGINT` on `APP_USER` (`ALTER TABLE APP_USER ADD COLUMN IF NOT EXISTS Customer_ID BIGINT;`). Added all 22 customer login records with verified BCrypt hash (`customer123`), and updated `admin`, `manager1`, and `staff1` records.
+* **Auto-Deployment**: Pushed to GitHub repository (`origin/main`), which triggers Render automatic redeployment.
 
