@@ -24,10 +24,12 @@ CREATE TABLE IF NOT EXISTS APP_USER (
     Password_Hash  VARCHAR(255) NOT NULL,
     Role           VARCHAR(20)  NOT NULL,
     Emp_ID         BIGINT,
+    Customer_ID    BIGINT,
     Is_Active      INT          DEFAULT 1 NOT NULL,
     Created_At     TIMESTAMP    DEFAULT CURRENT_TIMESTAMP NOT NULL,
     Last_Login     TIMESTAMP
 );
+ALTER TABLE APP_USER ADD COLUMN IF NOT EXISTS Customer_ID BIGINT;
 
 -- 1. BANK
 CREATE TABLE IF NOT EXISTS BANK (
@@ -172,10 +174,32 @@ CREATE TABLE IF NOT EXISTS AUDIT_LOG (
 -- SEED DATA (Idempotent MERGE / Inserts)
 -- ==============================================================================
 
--- Users
-MERGE INTO APP_USER KEY(Username) VALUES (1, 'admin', '$2a$12$R3mG5C7xo5u.SgZDv2LbWuYu9sFz.wwHetBl/Lku.nnYnaZG1aG9a', 'ADMIN', NULL, 1, CURRENT_TIMESTAMP, NULL);
-MERGE INTO APP_USER KEY(Username) VALUES (2, 'manager1', '$2a$12$RZ/kA6Kq514/BQT7Di5Qx.abyl5WnX/K2UGsHxRcw7gr7Oi/7a/Ta', 'MANAGER', NULL, 1, CURRENT_TIMESTAMP, NULL);
-MERGE INTO APP_USER KEY(Username) VALUES (3, 'staff1', '$2a$12$GMQlH/wcQLjO5MGRXJhrb..cfSJ2UpRjgnv8BnXrYNMAtvPtT23Eu', 'STAFF', NULL, 1, CURRENT_TIMESTAMP, NULL);
+-- Users (Admin, Manager, Staff, Customers)
+MERGE INTO APP_USER (User_ID, Username, Password_Hash, Role, Emp_ID, Customer_ID, Is_Active, Created_At) KEY(Username) VALUES (1, 'admin', '$2a$12$R3mG5C7xo5u.SgZDv2LbWuYu9sFz.wwHetBl/Lku.nnYnaZG1aG9a', 'ADMIN', NULL, NULL, 1, CURRENT_TIMESTAMP);
+MERGE INTO APP_USER (User_ID, Username, Password_Hash, Role, Emp_ID, Customer_ID, Is_Active, Created_At) KEY(Username) VALUES (2, 'manager1', '$2a$12$RZ/kA6Kq514/BQT7Di5Qx.abyl5WnX/K2UGsHxRcw7gr7Oi/7a/Ta', 'MANAGER', NULL, NULL, 1, CURRENT_TIMESTAMP);
+MERGE INTO APP_USER (User_ID, Username, Password_Hash, Role, Emp_ID, Customer_ID, Is_Active, Created_At) KEY(Username) VALUES (3, 'staff1', '$2a$12$F5dBBiF2ZObO3.TBmH5DtOE6EWxjQmHFCeAI9KA0LoxnVpC0OSEmm', 'STAFF', NULL, NULL, 1, CURRENT_TIMESTAMP);
+MERGE INTO APP_USER (User_ID, Username, Password_Hash, Role, Emp_ID, Customer_ID, Is_Active, Created_At) KEY(Username) VALUES (10, 'arjun.kumar', '$2b$10$.LCy9A/bIHRIkqyBLsgkKO0HE4RavEaKw..KFGRxNhTAD7FQ18cFm', 'CUSTOMER', NULL, 2001, 1, CURRENT_TIMESTAMP);
+MERGE INTO APP_USER (User_ID, Username, Password_Hash, Role, Emp_ID, Customer_ID, Is_Active, Created_At) KEY(Username) VALUES (11, 'sunita.patel', '$2b$10$.LCy9A/bIHRIkqyBLsgkKO0HE4RavEaKw..KFGRxNhTAD7FQ18cFm', 'CUSTOMER', NULL, 2002, 1, CURRENT_TIMESTAMP);
+MERGE INTO APP_USER (User_ID, Username, Password_Hash, Role, Emp_ID, Customer_ID, Is_Active, Created_At) KEY(Username) VALUES (12, 'vikram.singh', '$2b$10$.LCy9A/bIHRIkqyBLsgkKO0HE4RavEaKw..KFGRxNhTAD7FQ18cFm', 'CUSTOMER', NULL, 2003, 1, CURRENT_TIMESTAMP);
+MERGE INTO APP_USER (User_ID, Username, Password_Hash, Role, Emp_ID, Customer_ID, Is_Active, Created_At) KEY(Username) VALUES (13, 'anjali.gupta', '$2b$10$.LCy9A/bIHRIkqyBLsgkKO0HE4RavEaKw..KFGRxNhTAD7FQ18cFm', 'CUSTOMER', NULL, 2004, 1, CURRENT_TIMESTAMP);
+MERGE INTO APP_USER (User_ID, Username, Password_Hash, Role, Emp_ID, Customer_ID, Is_Active, Created_At) KEY(Username) VALUES (14, 'rahul.verma', '$2b$10$.LCy9A/bIHRIkqyBLsgkKO0HE4RavEaKw..KFGRxNhTAD7FQ18cFm', 'CUSTOMER', NULL, 2005, 1, CURRENT_TIMESTAMP);
+MERGE INTO APP_USER (User_ID, Username, Password_Hash, Role, Emp_ID, Customer_ID, Is_Active, Created_At) KEY(Username) VALUES (15, 'pooja.verma', '$2b$10$.LCy9A/bIHRIkqyBLsgkKO0HE4RavEaKw..KFGRxNhTAD7FQ18cFm', 'CUSTOMER', NULL, 2006, 1, CURRENT_TIMESTAMP);
+MERGE INTO APP_USER (User_ID, Username, Password_Hash, Role, Emp_ID, Customer_ID, Is_Active, Created_At) KEY(Username) VALUES (16, 'testuser.e2e', '$2b$10$.LCy9A/bIHRIkqyBLsgkKO0HE4RavEaKw..KFGRxNhTAD7FQ18cFm', 'CUSTOMER', NULL, 2007, 1, CURRENT_TIMESTAMP);
+MERGE INTO APP_USER (User_ID, Username, Password_Hash, Role, Emp_ID, Customer_ID, Is_Active, Created_At) KEY(Username) VALUES (17, 'aarohi.kapoor', '$2b$10$.LCy9A/bIHRIkqyBLsgkKO0HE4RavEaKw..KFGRxNhTAD7FQ18cFm', 'CUSTOMER', NULL, 2008, 1, CURRENT_TIMESTAMP);
+MERGE INTO APP_USER (User_ID, Username, Password_Hash, Role, Emp_ID, Customer_ID, Is_Active, Created_At) KEY(Username) VALUES (18, 'ishaan.joshi', '$2b$10$.LCy9A/bIHRIkqyBLsgkKO0HE4RavEaKw..KFGRxNhTAD7FQ18cFm', 'CUSTOMER', NULL, 2009, 1, CURRENT_TIMESTAMP);
+MERGE INTO APP_USER (User_ID, Username, Password_Hash, Role, Emp_ID, Customer_ID, Is_Active, Created_At) KEY(Username) VALUES (19, 'anika.menon', '$2b$10$.LCy9A/bIHRIkqyBLsgkKO0HE4RavEaKw..KFGRxNhTAD7FQ18cFm', 'CUSTOMER', NULL, 2010, 1, CURRENT_TIMESTAMP);
+MERGE INTO APP_USER (User_ID, Username, Password_Hash, Role, Emp_ID, Customer_ID, Is_Active, Created_At) KEY(Username) VALUES (20, 'vihaan.singh', '$2b$10$.LCy9A/bIHRIkqyBLsgkKO0HE4RavEaKw..KFGRxNhTAD7FQ18cFm', 'CUSTOMER', NULL, 2011, 1, CURRENT_TIMESTAMP);
+MERGE INTO APP_USER (User_ID, Username, Password_Hash, Role, Emp_ID, Customer_ID, Is_Active, Created_At) KEY(Username) VALUES (21, 'myra.rao', '$2b$10$.LCy9A/bIHRIkqyBLsgkKO0HE4RavEaKw..KFGRxNhTAD7FQ18cFm', 'CUSTOMER', NULL, 2012, 1, CURRENT_TIMESTAMP);
+MERGE INTO APP_USER (User_ID, Username, Password_Hash, Role, Emp_ID, Customer_ID, Is_Active, Created_At) KEY(Username) VALUES (22, 'reyansh.gupta', '$2b$10$.LCy9A/bIHRIkqyBLsgkKO0HE4RavEaKw..KFGRxNhTAD7FQ18cFm', 'CUSTOMER', NULL, 2013, 1, CURRENT_TIMESTAMP);
+MERGE INTO APP_USER (User_ID, Username, Password_Hash, Role, Emp_ID, Customer_ID, Is_Active, Created_At) KEY(Username) VALUES (23, 'saanvi.shetty', '$2b$10$.LCy9A/bIHRIkqyBLsgkKO0HE4RavEaKw..KFGRxNhTAD7FQ18cFm', 'CUSTOMER', NULL, 2014, 1, CURRENT_TIMESTAMP);
+MERGE INTO APP_USER (User_ID, Username, Password_Hash, Role, Emp_ID, Customer_ID, Is_Active, Created_At) KEY(Username) VALUES (24, 'arnav.chatterjee', '$2b$10$.LCy9A/bIHRIkqyBLsgkKO0HE4RavEaKw..KFGRxNhTAD7FQ18cFm', 'CUSTOMER', NULL, 2015, 1, CURRENT_TIMESTAMP);
+MERGE INTO APP_USER (User_ID, Username, Password_Hash, Role, Emp_ID, Customer_ID, Is_Active, Created_At) KEY(Username) VALUES (25, 'kiara.bose', '$2b$10$.LCy9A/bIHRIkqyBLsgkKO0HE4RavEaKw..KFGRxNhTAD7FQ18cFm', 'CUSTOMER', NULL, 2016, 1, CURRENT_TIMESTAMP);
+MERGE INTO APP_USER (User_ID, Username, Password_Hash, Role, Emp_ID, Customer_ID, Is_Active, Created_At) KEY(Username) VALUES (26, 'atharv.verma', '$2b$10$.LCy9A/bIHRIkqyBLsgkKO0HE4RavEaKw..KFGRxNhTAD7FQ18cFm', 'CUSTOMER', NULL, 2017, 1, CURRENT_TIMESTAMP);
+MERGE INTO APP_USER (User_ID, Username, Password_Hash, Role, Emp_ID, Customer_ID, Is_Active, Created_At) KEY(Username) VALUES (27, 'navya.shah', '$2b$10$.LCy9A/bIHRIkqyBLsgkKO0HE4RavEaKw..KFGRxNhTAD7FQ18cFm', 'CUSTOMER', NULL, 2018, 1, CURRENT_TIMESTAMP);
+MERGE INTO APP_USER (User_ID, Username, Password_Hash, Role, Emp_ID, Customer_ID, Is_Active, Created_At) KEY(Username) VALUES (28, 'kian.thomas', '$2b$10$.LCy9A/bIHRIkqyBLsgkKO0HE4RavEaKw..KFGRxNhTAD7FQ18cFm', 'CUSTOMER', NULL, 2019, 1, CURRENT_TIMESTAMP);
+MERGE INTO APP_USER (User_ID, Username, Password_Hash, Role, Emp_ID, Customer_ID, Is_Active, Created_At) KEY(Username) VALUES (29, 'pari.desai', '$2b$10$.LCy9A/bIHRIkqyBLsgkKO0HE4RavEaKw..KFGRxNhTAD7FQ18cFm', 'CUSTOMER', NULL, 2020, 1, CURRENT_TIMESTAMP);
+MERGE INTO APP_USER (User_ID, Username, Password_Hash, Role, Emp_ID, Customer_ID, Is_Active, Created_At) KEY(Username) VALUES (30, 'dhruv.mishra', '$2b$10$.LCy9A/bIHRIkqyBLsgkKO0HE4RavEaKw..KFGRxNhTAD7FQ18cFm', 'CUSTOMER', NULL, 2021, 1, CURRENT_TIMESTAMP);
+MERGE INTO APP_USER (User_ID, Username, Password_Hash, Role, Emp_ID, Customer_ID, Is_Active, Created_At) KEY(Username) VALUES (31, 'siya.patel', '$2b$10$.LCy9A/bIHRIkqyBLsgkKO0HE4RavEaKw..KFGRxNhTAD7FQ18cFm', 'CUSTOMER', NULL, 2022, 1, CURRENT_TIMESTAMP);
 
 -- Banks
 MERGE INTO BANK KEY(Bank_ID) VALUES (1, 'National Prosperity Bank', 'Connaught Place, New Delhi - 110001', '01123456789', 'info@npbank.in', 'www.npbank.in');
@@ -198,6 +222,23 @@ MERGE INTO CUSTOMER KEY(Customer_ID) VALUES (2002, 'Sunita', 'Patel', 'sunita.pa
 MERGE INTO CUSTOMER KEY(Customer_ID) VALUES (2003, 'Vikram', 'Singh', 'vikram.singh@email.com', '9800000003', DATE '1978-12-10', 'MALE', 'Jubilee Hills Hyderabad', 'VERIFIED', CURRENT_TIMESTAMP);
 MERGE INTO CUSTOMER KEY(Customer_ID) VALUES (2004, 'Anjali', 'Gupta', 'anjali.gupta@email.com', '9800000004', DATE '1995-03-28', 'FEMALE', 'Indiranagar Bangalore', 'PENDING', CURRENT_TIMESTAMP);
 MERGE INTO CUSTOMER KEY(Customer_ID) VALUES (2005, 'Rahul', 'Verma', 'rahul.verma@email.com', '9800000005', DATE '1982-07-17', 'MALE', 'Aliganj Lucknow', 'VERIFIED', CURRENT_TIMESTAMP);
+MERGE INTO CUSTOMER KEY(Customer_ID) VALUES (2006, 'Pooja', 'Verma', 'pooja.verma.test@example.com', '9876543299', DATE '1995-04-12', 'FEMALE', 'Sector 62 Noida', 'VERIFIED', CURRENT_TIMESTAMP);
+MERGE INTO CUSTOMER KEY(Customer_ID) VALUES (2007, 'TestUser', 'E2E', 'testcust828215@example.com', '9876540215', DATE '1995-04-12', 'FEMALE', 'Sector 62 Noida', 'VERIFIED', CURRENT_TIMESTAMP);
+MERGE INTO CUSTOMER KEY(Customer_ID) VALUES (2008, 'Aarohi', 'Kapoor', 'aarohi.kapoor@example.in', '9300000001', DATE '1993-05-14', 'FEMALE', 'Mumbai', 'VERIFIED', CURRENT_TIMESTAMP);
+MERGE INTO CUSTOMER KEY(Customer_ID) VALUES (2009, 'Ishaan', 'Joshi', 'ishaan.joshi@example.in', '9300000002', DATE '1988-11-02', 'MALE', 'Pune', 'VERIFIED', CURRENT_TIMESTAMP);
+MERGE INTO CUSTOMER KEY(Customer_ID) VALUES (2010, 'Anika', 'Menon', 'anika.menon@example.in', '9300000003', DATE '1995-03-21', 'FEMALE', 'Kochi', 'VERIFIED', CURRENT_TIMESTAMP);
+MERGE INTO CUSTOMER KEY(Customer_ID) VALUES (2011, 'Vihaan', 'Singh', 'vihaan.singh@example.in', '9300000004', DATE '1982-08-17', 'MALE', 'Delhi', 'VERIFIED', CURRENT_TIMESTAMP);
+MERGE INTO CUSTOMER KEY(Customer_ID) VALUES (2012, 'Myra', 'Rao', 'myra.rao@example.in', '9300000005', DATE '1990-12-30', 'FEMALE', 'Hyderabad', 'VERIFIED', CURRENT_TIMESTAMP);
+MERGE INTO CUSTOMER KEY(Customer_ID) VALUES (2013, 'Reyansh', 'Gupta', 'reyansh.gupta@example.in', '9300000006', DATE '1998-04-09', 'MALE', 'Jaipur', 'VERIFIED', CURRENT_TIMESTAMP);
+MERGE INTO CUSTOMER KEY(Customer_ID) VALUES (2014, 'Saanvi', 'Shetty', 'saanvi.shetty@example.in', '9300000007', DATE '1986-07-26', 'FEMALE', 'Mangalore', 'VERIFIED', CURRENT_TIMESTAMP);
+MERGE INTO CUSTOMER KEY(Customer_ID) VALUES (2015, 'Arnav', 'Chatterjee', 'arnav.chatterjee@example.in', '9300000008', DATE '1992-01-13', 'MALE', 'Kolkata', 'VERIFIED', CURRENT_TIMESTAMP);
+MERGE INTO CUSTOMER KEY(Customer_ID) VALUES (2016, 'Kiara', 'Bose', 'kiara.bose@example.in', '9300000009', DATE '1989-09-05', 'FEMALE', 'Kolkata', 'VERIFIED', CURRENT_TIMESTAMP);
+MERGE INTO CUSTOMER KEY(Customer_ID) VALUES (2017, 'Atharv', 'Verma', 'atharv.verma@example.in', '9300000010', DATE '1996-06-18', 'MALE', 'Bhopal', 'VERIFIED', CURRENT_TIMESTAMP);
+MERGE INTO CUSTOMER KEY(Customer_ID) VALUES (2018, 'Navya', 'Shah', 'navya.shah@example.in', '9300000011', DATE '1984-02-28', 'FEMALE', 'Ahmedabad', 'VERIFIED', CURRENT_TIMESTAMP);
+MERGE INTO CUSTOMER KEY(Customer_ID) VALUES (2019, 'Kian', 'Thomas', 'kian.thomas@example.in', '9300000012', DATE '1991-10-11', 'MALE', 'Chennai', 'VERIFIED', CURRENT_TIMESTAMP);
+MERGE INTO CUSTOMER KEY(Customer_ID) VALUES (2020, 'Pari', 'Desai', 'pari.desai@example.in', '9300000013', DATE '1997-03-03', 'FEMALE', 'Surat', 'VERIFIED', CURRENT_TIMESTAMP);
+MERGE INTO CUSTOMER KEY(Customer_ID) VALUES (2021, 'Dhruv', 'Mishra', 'dhruv.mishra@example.in', '9300000014', DATE '1987-12-07', 'MALE', 'Varanasi', 'VERIFIED', CURRENT_TIMESTAMP);
+MERGE INTO CUSTOMER KEY(Customer_ID) VALUES (2022, 'Siya', 'Patel', 'siya.patel@example.in', '9300000015', DATE '1994-07-19', 'FEMALE', 'Vadodara', 'VERIFIED', CURRENT_TIMESTAMP);
 
 -- Accounts
 MERGE INTO ACCOUNT KEY(Account_No) VALUES (100000001, 2001, 1, 'SAVINGS', 50250.00, 'ACTIVE', DATE '2023-01-10');
