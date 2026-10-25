@@ -262,6 +262,6 @@ Bank_Account_Management_System/
 
 ## 9. Cloud & Deployment (Render)
 * **Architecture**: Render runs the multi-stage `Dockerfile` with `SPRING_PROFILES_ACTIVE=cloud` which initializes H2 in Oracle mode via `backend/src/main/resources/schema-cloud.sql`.
-* **Fix Applied**: Updated `schema-cloud.sql` to include `Customer_ID BIGINT` on `APP_USER` (`ALTER TABLE APP_USER ADD COLUMN IF NOT EXISTS Customer_ID BIGINT;`). Added all 22 customer login records with verified BCrypt hash (`customer123`), and updated `admin`, `manager1`, and `staff1` records.
+* **Fix Applied**: Updated `schema-cloud.sql` to include `Customer_ID BIGINT` on `APP_USER` (`ALTER TABLE APP_USER ADD COLUMN IF NOT EXISTS Customer_ID BIGINT;`). Added all 22 customer login records with verified BCrypt hash (`customer123`), and updated `admin`, `manager1`, and `staff1` records. Restarted sequences (e.g. `SEQ_CUSTOMER_ID` to 2100) past seed data to eliminate primary key collision errors on customer onboarding. Added debouncing to the modal submit button.
 * **Auto-Deployment**: Pushed to GitHub repository (`origin/main`), which triggers Render automatic redeployment.
 
