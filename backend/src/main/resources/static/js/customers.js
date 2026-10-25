@@ -352,7 +352,7 @@ window.openCustomerModal = async (customer = null) => {
 
     const footer = `
         <button type="button" class="btn btn-outline" onclick="closeModal()">Cancel</button>
-        <button type="button" class="btn btn-primary" onclick="saveCustomer()">
+        <button type="button" class="btn btn-primary" id="btn-save-customer" onclick="saveCustomer()">
             ${isEdit ? 'Update Customer' : 'Create & Onboard Customer'}
         </button>
     `;
@@ -389,6 +389,7 @@ window.saveCustomer = async () => {
     const gender = document.getElementById('cust-modal-gender').value;
     const kyc = document.getElementById('cust-modal-kyc').value;
     const address = document.getElementById('cust-modal-address').value.trim();
+    const btn = document.getElementById('btn-save-customer');
 
     if (!fname || !lname || !email || !phone || !dob) {
         showToast('Please fill in all required fields.', 'warning');
@@ -410,6 +411,11 @@ window.saveCustomer = async () => {
         kycStatus: kyc,
         address: address
     };
+
+    if (btn) {
+        btn.disabled = true;
+        btn.innerText = 'Saving...';
+    }
 
     try {
         if (id) {
@@ -446,6 +452,11 @@ window.saveCustomer = async () => {
         fetchCustomers();
     } catch (e) {
         // handled in api.js toast
+    } finally {
+        if (btn) {
+            btn.disabled = false;
+            btn.innerText = id ? 'Update Customer' : 'Create & Onboard Customer';
+        }
     }
 };
 
